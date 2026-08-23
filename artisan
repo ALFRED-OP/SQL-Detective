@@ -1,0 +1,123 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+$command = $argv[1] ?? 'help';
+
+switch ($command) {
+    case 'migrate':
+        migrate();
+        break;
+    case 'migrate:fresh':
+        migrateFresh();
+        break;
+    case 'migrate:rollback':
+        $steps = $argv[2] ?? 1;
+        rollback((int)$steps);
+        break;
+    case 'migrate:status':
+        status();
+        break;
+    case 'db:seed':
+        seed();
+        break;
+    case 'key:generate':
+        generateKey();
+        break;
+    case 'help':
+    default:
+        showHelp();
+        break;
+}
+
+function getDb(): \PDO
+{
+    $config = require __DIR__ . '/config/database.php';
+    $conn = $config['connections'][$config['default']];
+
+    $dsn = "{$conn['driver']}:host={$conn['host']};port={$conn['port']};dbname={$conn['database']};charset={$conn['charset']}";
+    return new \PDO($dsn, $conn['username'], $conn['password'], $conn['options']);
+}
+
+function migrate(): void
+{
+    $db = getDb();
+    $migration = new \App\Core\Migration($db);
+    $count = $migration->run();
+    echo "Migrations completed: $count migration(s) run\n";
+}
+
+function migrateFresh(): void
+{
+    $db = getDb();
+    $migration = new \App\Core\Migration($db);
+    $migration->refresh();
+    echo "Database refreshed and migrations run\n";
+}
+
+function rollback(int $steps = 1): void
+{
+    $db = getDb();
+    $migration = new \App\Core\Migration($db);
+    $count = $migration->rollback($steps);
+    echo "Rolled back $count migration(s)\n";
+}
+
+function status(): void
+{
+    $db = getDb();
+    $migration = new \App\Core\Migration($db);
+    $migration->status();
+}
+
+function seed(): void
+{
+    require_once __DIR__ . '/database/seeds/DatabaseSeeder.php';
+    $seeder = new \Database\Seeds\DatabaseSeeder();
+    $seeder->run();
+    echo "Database seeded\n";
+}
+
+function generateKey(): void
+{
+    $key = base64_encode(random_bytes(32));
+    $envFile = __DIR__ . '/.env';
+
+    if (!file_exists($envFile)) {
+        copy(__DIR__ . '/.env.example', $envFile);
+    }
+
+    $content = file_get_contents($envFile);
+    $content = preg_replace('/^APP_KEY=.*$/m', "APP_KEY=$key", $content);
+
+    if (!str_contains($content, 'APP_KEY=')) {
+        $content = "APP_KEY=$key\n" . $content;
+    }
+
+    file_put_contents($envFile, $content);
+    echo "Application key generated: $key\n";
+}
+
+function showHelp(): void
+{
+    echo <<<HELP
+SQL Detective - Artisan CLI
+
+Usage:
+  php artisan <command>
+
+Commands:
+  migrate              Run pending migrations
+  migrate:fresh        Drop all tables and re-run migrations
+  migrate:rollback     Rollback last migration batch [steps]
+  migrate:status       Show migration status
+  db:seed              Run database seeders
+  key:generate         Generate application key
+  help                 Show this help
+
+HELP;
+}
