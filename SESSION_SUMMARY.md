@@ -63,11 +63,15 @@ Build a complete "SQL Detective" web application — an interactive database inv
 - `public/assets/js/detective.js` — SQL editor, query execution, schema viewer, hints, challenges, workspace layout
 - `public/assets/js/admin.js` — confirmations, bulk actions, inline editing, search, stats animation
 
-### Investigation Database Data (3 of 30 DONE)
-- Case 001: "The Missing Million" — corporate_finance DB (schema + data) ✓
-- Case 002: "Digital Trail" — digital_forensics DB (schema + data) ✓
-- Case 003: "Employee Portal Breach" — employee_portal DB (schema + data) ✓
-- Cases 004-030: Defined in seeder (challenges, hints) but investigation DBs not created
+### Investigation Database Data (ALL 30 CASES COMPLETE)
+- All 30 cases share 3 investigation databases (no separate DBs per case):
+  - `corporate_finance` (cases 001, 004, 007, 010, 013, 017, 020, 022, 026, 030)
+  - `digital_forensics` (cases 002, 005, 008, 011, 012, 014, 016, 018, 021, 023, 025, 028, 029)
+  - `employee_portal` (cases 003, 006, 009, 015, 019, 024, 027)
+- Each DB has `schema.sql` + `data.sql` (base data) + `supplemental_data.sql` (data for additional cases)
+- Supplemental data adds: multi-hop money trails, duplicate payments, night logins, permission escalation chains, file access patterns, phishing emails, certificate theft, APT timeline, data exfiltration, log tampering, concurrent sessions, manager abuse, and more
+- No new tables needed — existing schemas cover all 30 case objectives
+- Case 0020 (Vendor Fraud) already had sufficient data in base seed
 
 ### Documentation (COMPLETE)
 - `docs/INSTALLATION.md` — full setup guide
@@ -112,7 +116,7 @@ All core features are complete with all critical bugs fixed:
 - 100+ files across MVC structure
 - 34 views (including 3 new auth views)
 - 30 investigation cases defined with challenges and hints
-- 3 fully seeded investigation databases
+- 3 fully seeded investigation databases (schemas + base data + supplemental data for all 30 cases)
 - Complete CSS design system with dark/light mode
 - Full JavaScript for workspace, admin, and global functionality
 - 9 error pages
@@ -140,14 +144,14 @@ All core features are complete with all critical bugs fixed:
 - .gitignore blocking investigation DB .sql files
 
 ### Known Remaining Issues
-1. Investigation databases for cases 004-030 (27 more DB schemas/data files)
-2. Suspect and evidence records for each case in the main DB
-3. Final PHP syntax verification (not possible without PHP on this Windows dev environment)
+1. Suspect and evidence records for each case in the main DB (not strictly required — investigations work without these)
+2. Final PHP syntax verification (not possible without PHP on this Windows dev environment)
 
 ## Key File Paths
 - Project root: `D:\personal\A LVL PMM Project\SQL-Detective\SQL-Detective\`
 - Spec doc: `D:\personal\A LVL PMM Project\SQL-Detective\SQL-Detective\SQL Detective — Complete NIELIT A-Level Major Project Spec & OpenCode Development Prompt.md`
-- Investigation DBs: `database/investigation_databases/case_XXX/`
+- Investigation DBs: `database/investigation_databases/case_001/`, `case_002/`, `case_003/`
+  - Each has: `schema.sql`, `data.sql`, `supplemental_data.sql`
 - CSS: `public/assets/css/app.css` + `components.css`
 - JS: `public/assets/js/app.js`, `detective.js`, `admin.js`
 - Views: `views/` (34 files)

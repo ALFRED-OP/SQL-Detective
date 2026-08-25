@@ -177,6 +177,13 @@ class Application
         return $this->investigationDb;
     }
 
+    public function investigationDbFor(string $databaseName): \PDO
+    {
+        $conn = $this->investigationDb();
+        $conn->exec("USE `" . str_replace('`', '', $databaseName) . "`");
+        return $conn;
+    }
+
     private function createConnection(array $config): \PDO
     {
         $dsn = "{$config['driver']}:host={$config['host']};port={$config['port']};dbname={$config['database']};charset={$config['charset']}";

@@ -21,9 +21,11 @@ class DatabaseSeeder
     {
         $this->seedUsers();
         $this->seedCases();
+        $this->seedCaseDatabases();
         $this->seedChallenges();
         $this->seedHints();
         $this->seedAchievements();
+        $this->loadInvestigationData();
         echo "Database seeding completed\n";
     }
 
@@ -497,6 +499,148 @@ class DatabaseSeeder
         }
     }
 
+    private function seedCaseDatabases(): void
+    {
+        $caseDbMap = [
+            'CASE-001' => ['corporate_finance', 'Financial transactions, employee accounts, and audit logs'],
+            'CASE-002' => ['digital_forensics', 'User activities, files, network logs, and communications'],
+            'CASE-003' => ['employee_portal', 'Employee records, access logs, and permission changes'],
+            'CASE-004' => ['corporate_finance', 'Login attempts and IP tracking data'],
+            'CASE-005' => ['digital_forensics', 'Service account activities and scheduling data'],
+            'CASE-006' => ['employee_portal', 'Audit trail and record modifications'],
+            'CASE-007' => ['corporate_finance', 'Department budgets and employee spending'],
+            'CASE-008' => ['digital_forensics', 'Email communications and network logs'],
+            'CASE-009' => ['employee_portal', 'Login records and geographic data'],
+            'CASE-010' => ['corporate_finance', 'Transaction patterns and duplicate detection'],
+            'CASE-011' => ['digital_forensics', 'File access patterns and timestamps'],
+            'CASE-012' => ['digital_forensics', 'Network traffic and data transfers'],
+            'CASE-013' => ['corporate_finance', 'Money flow through bank accounts'],
+            'CASE-014' => ['digital_forensics', 'File access volumes and user activities'],
+            'CASE-015' => ['employee_portal', 'Permission change chains and escalation'],
+            'CASE-016' => ['digital_forensics', 'Database queries and automation patterns'],
+            'CASE-017' => ['corporate_finance', 'Recent hires and transaction patterns'],
+            'CASE-018' => ['digital_forensics', 'Certificate and key file access'],
+            'CASE-019' => ['employee_portal', 'Access pattern analysis across resources'],
+            'CASE-020' => ['corporate_finance', 'External payments and fraud detection'],
+            'CASE-021' => ['digital_forensics', 'APT timeline and attack reconstruction'],
+            'CASE-022' => ['corporate_finance', 'Multi-hop money laundering trails'],
+            'CASE-023' => ['digital_forensics', 'System logs and security events'],
+            'CASE-024' => ['employee_portal', 'Manager self-approvals and access abuse'],
+            'CASE-025' => ['digital_forensics', 'Data exfiltration methods and totals'],
+            'CASE-026' => ['corporate_finance', 'Phantom transactions and fraud patterns'],
+            'CASE-027' => ['employee_portal', 'Concurrent sessions and identity theft'],
+            'CASE-028' => ['digital_forensics', 'Info leaks and email-file correlations'],
+            'CASE-029' => ['digital_forensics', 'Log integrity and tampering detection'],
+            'CASE-030' => ['corporate_finance', 'Cross-database correlation and mastermind identification'],
+        ];
+
+        $caseMap = [];
+        $stmt = $this->db->query("SELECT id, case_code FROM cases");
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $caseMap[$row['case_code']] = $row['id'];
+        }
+
+        $descriptions = [
+            'corporate_finance' => 'Financial database containing employee records, transactions, bank accounts, and audit logs',
+            'digital_forensics' => 'Forensic database with user activities, files, network logs, emails, and system events',
+            'employee_portal' => 'Employee portal database with access logs, permission changes, and audit trails',
+        ];
+
+        foreach ($caseDbMap as $caseCode => [$dbName, $description]) {
+            $caseId = $caseMap[$caseCode] ?? null;
+            if (!$caseId) continue;
+
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM case_databases WHERE case_id = ?");
+            $stmt->execute([$caseId]);
+            if ($stmt->fetchColumn() === 0) {
+                $this->db->prepare("
+                    INSERT INTO case_databases (case_id, database_name, database_description)
+                    VALUES (?, ?, ?)
+                ")->execute([$caseId, $dbName, $descriptions[$dbName] ?? $description]);
+                echo "Case database mapping created for {$caseCode} -> {$dbName}\n";
+            }
+        }
+    }
+
+    private function loadInvestigationData(): void
+    {
+        $config = require base_path('config/database.php');
+        $conn = $config['connections'][$config['default']];
+        $dsn = "{$conn['driver']}:host={$conn['host']};port={$conn['port']};charset={$conn['charset']}";
+        $pdo = new PDO($dsn, $conn['username'], $conn['password'], $conn['options'] ?? []);
+
+        $dbMap = [
+            'corporate_finance' => base_path('database/investigation_databases/case_001'),
+            'digital_forensics' => base_path('database/investigation_databases/case_002'),
+            'employee_portal'   => base_path('database/investigation_databases/case_003'),
+        ];
+
+        foreach ($dbMap as $dbName => $dir) {
+            $pdo->exec("CREATE DATABASE IF NOT EXISTS `" . $dbName . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+            $pdo->exec("USE `" . $dbName . "`");
+
+            $sqlFiles = ['schema.sql', 'data.sql', 'supplemental_data.sql'];
+            foreach ($sqlFiles as $file) {
+                $path = $dir . '/' . $file;
+                if (!file_exists($path)) continue;
+
+                echo "Loading {$file} into {$dbName}...\n";
+                $sql = file_get_contents($path);
+                $statements = $this->splitSqlStatements($sql);
+                foreach ($statements as $statement) {
+                    $statement = trim($statement);
+                    if (!empty($statement) && !str_starts_with($statement, '--')) {
+                        try {
+                            $pdo->exec($statement);
+                        } catch (PDOException $e) {
+                            echo "  Warning: " . $e->getMessage() . "\n";
+                        }
+                    }
+                }
+            }
+        }
+
+        echo "Investigation databases loaded successfully\n";
+    }
+
+    private function splitSqlStatements(string $sql): array
+    {
+        $sql = preg_replace('/--.*$/m', '', $sql);
+        $sql = preg_replace('/\/\*[\s\S]*?\*\//', '', $sql);
+        $statements = [];
+        $current = '';
+        $inString = false;
+        $stringChar = '';
+
+        for ($i = 0; $i < strlen($sql); $i++) {
+            $char = $sql[$i];
+
+            if ($inString) {
+                $current .= $char;
+                if ($char === $stringChar && ($i === 0 || $sql[$i - 1] !== '\\')) {
+                    $inString = false;
+                }
+            } else {
+                if ($char === "'" || $char === '"') {
+                    $inString = true;
+                    $stringChar = $char;
+                    $current .= $char;
+                } elseif ($char === ';') {
+                    $statements[] = $current;
+                    $current = '';
+                } else {
+                    $current .= $char;
+                }
+            }
+        }
+
+        if (trim($current) !== '') {
+            $statements[] = $current;
+        }
+
+        return $statements;
+    }
+
     private function seedChallenges(): void
     {
         $challenges = [
@@ -512,6 +656,113 @@ class DatabaseSeeder
             // CASE-003 challenges
             ['CASE-003', 'Self-Escalation', 'Find all permission changes where employee_id = changed_by.', 'beginner', 50, 'SELECT * FROM permission_changes WHERE employee_id = changed_by', '{"type": "row_count", "min": 2}'],
             ['CASE-003', 'Data Exports', 'Which employees exported data from suspicious IPs?', 'intermediate', 100, 'SELECT DISTINCT employee_id FROM access_logs WHERE ip_address NOT LIKE "192.168.%" AND action = "export"', '{"type": "row_count", "min": 1}'],
+
+            // CASE-004 challenges
+            ['CASE-004', 'Non-Office Logins', 'Find all login attempts from IPs not in the 192.168.x.x office range.', 'beginner', 50, 'SELECT employee_id, login_time, ip_address, status FROM login_logs WHERE ip_address NOT LIKE "192.168.%"', '{"type": "row_count", "min": 10}'],
+            ['CASE-004', 'Brute Force Attack', 'Which admin account was targeted with the most failed login attempts from external IPs?', 'intermediate', 100, 'SELECT employee_id, COUNT(*) as attempts FROM login_logs WHERE ip_address NOT LIKE "192.168.%" AND status = "failed" GROUP BY employee_id ORDER BY attempts DESC LIMIT 1', '{"type": "value_check", "column": "employee_id", "expected": "2"}'],
+
+            // CASE-005 challenges
+            ['CASE-005', 'Odd Hour Activity', 'Find all activities by service accounts (user_id IN (9, 10)) that occurred outside business hours (before 6 AM or after 10 PM).', 'beginner', 50, 'SELECT user_id, action_type, timestamp FROM activities WHERE user_id IN (9, 10) AND (HOUR(timestamp) < 6 OR HOUR(timestamp) >= 22)', '{"type": "row_count", "min": 8}'],
+            ['CASE-005', 'Service Account Abuse', 'Which service account performed the most suspicious activities outside business hours?', 'intermediate', 100, 'SELECT user_id, COUNT(*) as suspicious_count FROM activities WHERE user_id IN (9, 10) AND (HOUR(timestamp) < 6 OR HOUR(timestamp) >= 22) GROUP BY user_id ORDER BY suspicious_count DESC LIMIT 1', '{"type": "value_check", "column": "user_id", "expected": "9"}'],
+
+            // CASE-006 challenges
+            ['CASE-006', 'Deleted Records', 'Find all delete operations on the employees table from the audit_trail.', 'beginner', 50, 'SELECT record_id, performed_by, performed_at FROM audit_trail WHERE table_name = "employees" AND action = "delete"', '{"type": "row_count", "min": 2}'],
+            ['CASE-006', 'Who Did It', 'Which employee performed the most delete operations on employee records?', 'intermediate', 100, 'SELECT performed_by, COUNT(*) as deletions FROM audit_trail WHERE table_name = "employees" AND action = "delete" GROUP BY performed_by ORDER BY deletions DESC LIMIT 1', '{"type": "value_check", "column": "performed_by", "expected": "5"}'],
+
+            // CASE-007 challenges
+            ['CASE-007', 'Budget vs Spending', 'Compare each department''s budget with the total spending initiated by their employees. Return department code, budget, and total spending.', 'beginner', 60, 'SELECT d.code, d.budget, SUM(t.amount) as total_spending FROM departments d JOIN employees e ON d.id = e.department_id JOIN transactions t ON e.id = t.initiated_by GROUP BY d.id', '{"type": "row_count", "min": 4}'],
+            ['CASE-007', 'Over Budget', 'Which department exceeded its budget? Return the department code and the amount over budget.', 'intermediate', 120, 'SELECT d.code, SUM(t.amount) - d.budget as over_budget FROM departments d JOIN employees e ON d.id = e.department_id JOIN transactions t ON e.id = t.initiated_by GROUP BY d.id HAVING SUM(t.amount) > d.budget', '{"type": "row_count", "min": 1}'],
+
+            // CASE-008 challenges
+            ['CASE-008', 'Phishing Detection', 'Find all emails with suspicious subjects or from external senders (sender_id IS NULL).', 'beginner', 50, 'SELECT message_id, subject, sent_at FROM emails WHERE sender_id IS NULL OR subject LIKE "%password%" OR subject LIKE "%verify%" OR subject LIKE "%bonus%"', '{"type": "row_count", "min": 5}'],
+            ['CASE-008', 'Compromised Account', 'Which internal account was used to forward phishing emails externally?', 'intermediate', 100, 'SELECT sender_id, COUNT(*) as phishing_count FROM emails WHERE sender_id IS NOT NULL AND (recipient_ids LIKE "%external%" OR subject LIKE "%FW:%") GROUP BY sender_id ORDER BY phishing_count DESC LIMIT 1', '{"type": "value_check", "column": "sender_id", "expected": "6"}'],
+
+            // CASE-009 challenges
+            ['CASE-009', 'Night Logins', 'Find all successful logins between 11 PM and 5 AM.', 'beginner', 50, 'SELECT employee_id, login_time, ip_address, location FROM login_records WHERE status = "success" AND (HOUR(login_time) >= 23 OR HOUR(login_time) < 5)', '{"type": "row_count", "min": 5}'],
+            ['CASE-009', 'Night Owl Employees', 'Which employee logged in at night the most times? Return employee_id and count.', 'intermediate', 100, 'SELECT employee_id, COUNT(*) as night_logins FROM login_records WHERE status = "success" AND (HOUR(login_time) >= 23 OR HOUR(login_time) < 5) GROUP BY employee_id ORDER BY night_logins DESC LIMIT 1', '{"type": "value_check", "column": "employee_id", "expected": "5"}'],
+
+            // CASE-010 challenges
+            ['CASE-010', 'Find Duplicates', 'Find transactions where the same amount was sent to the same to_account_id on the same date.', 'beginner', 60, 'SELECT amount, to_account_id, DATE(transaction_date) as txn_date, COUNT(*) as occurrences FROM transactions GROUP BY amount, to_account_id, DATE(transaction_date) HAVING COUNT(*) > 1', '{"type": "row_count", "min": 3}'],
+            ['CASE-010', 'Total Fraud', 'What is the total amount of duplicate payments?', 'intermediate', 120, 'SELECT SUM(amount) as total_duplicate FROM (SELECT amount, to_account_id, DATE(transaction_date) as txn_date FROM transactions GROUP BY amount, to_account_id, DATE(transaction_date) HAVING COUNT(*) > 1) duplicates JOIN transactions t ON t.amount = duplicates.amount AND DATE(t.transaction_date) = duplicates.txn_date', '{"type": "row_count", "min": 1}'],
+
+            // CASE-011 challenges
+            ['CASE-011', 'File Access Timing', 'Find employees who accessed files with "confidential", "strategy", "roadmap", or "bid" in the name.', 'beginner', 75, 'SELECT DISTINCT user_id, description, timestamp FROM activities WHERE action_type = "file_access" AND (description LIKE "%confidential%" OR description LIKE "%strategy%" OR description LIKE "%roadmap%" OR description LIKE "%bid%")', '{"type": "row_count", "min": 5}'],
+            ['CASE-011', 'Insider Pattern', 'Which user accessed the most confidential-sounding files?', 'intermediate', 125, 'SELECT user_id, COUNT(*) as file_count FROM activities WHERE action_type = "file_access" AND (description LIKE "%confidential%" OR description LIKE "%strategy%" OR description LIKE "%roadmap%" OR description LIKE "%bid%") GROUP BY user_id ORDER BY file_count DESC LIMIT 1', '{"type": "value_check", "column": "user_id", "expected": "3"}'],
+
+            // CASE-012 challenges
+            ['CASE-012', 'Suspicious Traffic', 'Find all network connections with status = "suspicious", grouped by source IP.', 'beginner', 75, 'SELECT source_ip, COUNT(*) as connection_count, SUM(bytes_sent) as total_bytes FROM network_logs WHERE status = "suspicious" GROUP BY source_ip', '{"type": "row_count", "min": 3}'],
+            ['CASE-012', 'Top Exfiltrator', 'Which source IP transferred the most data over suspicious connections?', 'intermediate', 125, 'SELECT source_ip, SUM(bytes_sent) as total_bytes FROM network_logs WHERE status = "suspicious" GROUP BY source_ip ORDER BY total_bytes DESC LIMIT 1', '{"type": "value_check", "column": "source_ip", "expected": "203.0.113.50"}'],
+
+            // CASE-013 challenges
+            ['CASE-013', 'Trace the Money', 'Find all transactions from account 1 where amount > 500000. Join with bank_accounts to show source and destination names.', 'beginner', 75, 'SELECT t.transaction_id, t.amount, ba_from.account_name as from_account, ba_to.account_name as to_account, t.transaction_date FROM transactions t JOIN bank_accounts ba_from ON t.from_account_id = ba_from.id JOIN bank_accounts ba_to ON t.to_account_id = ba_to.id WHERE t.from_account_id = 1 AND t.amount > 500000', '{"type": "row_count", "min": 8}'],
+            ['CASE-013', 'Follow the Trail', 'Trace the money flow from the main operating account through intermediary accounts to external accounts. Show each hop.', 'advanced', 150, 'SELECT t.transaction_id, ba_from.account_name as from_acct, ba_to.account_name as to_acct, t.amount, t.transaction_date FROM transactions t JOIN bank_accounts ba_from ON t.from_account_id = ba_from.id JOIN bank_accounts ba_to ON t.to_account_id = ba_to.id WHERE t.from_account_id IN (1, 14, 15) AND t.amount > 500000 ORDER BY t.transaction_date', '{"type": "row_count", "min": 5}'],
+
+            // CASE-014 challenges
+            ['CASE-014', 'Data Hoarder', 'Find all file_access activities grouped by employee. Which employee accessed the most files?', 'beginner', 75, 'SELECT user_id, COUNT(*) as files_accessed FROM activities WHERE action_type = "file_access" GROUP BY user_id ORDER BY files_accessed DESC', '{"type": "value_check", "column": "user_id", "expected": "3"}'],
+            ['CASE-014', 'Volume Check', 'How many total bytes of data did the data hoarder access?', 'advanced', 150, 'SELECT user_id, SUM(CAST(JSON_UNQUOTE(JSON_EXTRACT(details, "$.size_bytes")) AS UNSIGNED)) as total_bytes FROM activities WHERE action_type = "file_access" GROUP BY user_id ORDER BY total_bytes DESC LIMIT 1', '{"type": "row_count", "min": 1}'],
+
+            // CASE-015 challenges
+            ['CASE-015', 'Escalation Chain', 'Find the complete chain of permission_changes ordered by change_time.', 'beginner', 75, 'SELECT employee_id, changed_by, permission_type, old_value, new_value, change_time FROM permission_changes ORDER BY change_time', '{"type": "row_count", "min": 10}'],
+            ['CASE-015', 'Self-Escalator', 'Which employee made the most self-changes (employee_id = changed_by)?', 'intermediate', 125, 'SELECT employee_id, COUNT(*) as self_changes FROM permission_changes WHERE employee_id = changed_by GROUP BY employee_id ORDER BY self_changes DESC LIMIT 1', '{"type": "value_check", "column": "employee_id", "expected": "5"}'],
+
+            // CASE-016 challenges
+            ['CASE-016', 'Query Storm', 'Find users who made more than 10 database queries in a single minute.', 'beginner', 75, 'SELECT user_id, DATE_FORMAT(timestamp, "%Y-%m-%d %H:%i") as minute_window, COUNT(*) as query_count FROM activities WHERE action_type = "database_query" GROUP BY user_id, DATE_FORMAT(timestamp, "%Y-%m-%d %H:%i") HAVING query_count > 10', '{"type": "row_count", "min": 1}'],
+            ['CASE-016', 'Bot Detection', 'How many automated queries did the suspect user execute in total during the attack window?', 'intermediate', 125, 'SELECT COUNT(*) as total_queries FROM activities WHERE action_type = "database_query" AND user_id = 6 AND timestamp BETWEEN "2026-08-12 02:30:00" AND "2026-08-12 02:31:00"', '{"type": "value_check", "column": "total_queries", "expected": "15"}'],
+
+            // CASE-017 challenges
+            ['CASE-017', 'Recent Hires', 'Find all transactions involving employees hired in 2025 or later where the amount exceeds 100000.', 'beginner', 75, 'SELECT e.first_name, e.last_name, t.amount, t.transaction_date FROM transactions t JOIN employees e ON t.initiated_by = e.id WHERE e.hire_date >= "2025-01-01" AND t.amount > 100000', '{"type": "row_count", "min": 4}'],
+            ['CASE-017', 'Money Mule Total', 'What is the total amount transacted by employees hired in 2025 or later?', 'intermediate', 125, 'SELECT SUM(t.amount) as total FROM transactions t JOIN employees e ON t.initiated_by = e.id WHERE e.hire_date >= "2025-01-01"', '{"type": "row_count", "min": 1}'],
+
+            // CASE-018 challenges
+            ['CASE-018', 'Certificate Access', 'Find all activities involving certificate files (containing "cert", "pem", or "key").', 'beginner', 75, 'SELECT user_id, description, timestamp FROM activities WHERE action_type = "file_access" AND (description LIKE "%cert%" OR description LIKE "%pem%" OR description LIKE "%key%")', '{"type": "row_count", "min": 5}'],
+            ['CASE-018', 'Certificate Theft', 'Which user downloaded the most certificate files?', 'intermediate', 125, 'SELECT user_id, COUNT(*) as cert_downloads FROM activities WHERE action_type = "file_access" AND (description LIKE "%cert%" OR description LIKE "%pem%" OR description LIKE "%key%") GROUP BY user_id ORDER BY cert_downloads DESC LIMIT 1', '{"type": "value_check", "column": "user_id", "expected": "6"}'],
+
+            // CASE-019 challenges
+            ['CASE-019', 'Access Pattern', 'Find employees who accessed more than 3 different resource_types in the access_logs.', 'beginner', 75, 'SELECT employee_id, COUNT(DISTINCT resource_type) as resource_types FROM access_logs GROUP BY employee_id HAVING resource_types > 3', '{"type": "row_count", "min": 1}'],
+            ['CASE-019', 'Pattern Shift', 'Which employee showed the biggest change in access patterns between early and late August?', 'advanced', 150, 'SELECT a.employee_id, COUNT(DISTINCT a.resource_type) as total_types FROM access_logs a GROUP BY a.employee_id HAVING total_types > 3', '{"type": "row_count", "min": 1}'],
+
+            // CASE-020 challenges
+            ['CASE-020', 'External Payments', 'Find payments to external accounts initiated by Finance department employees.', 'beginner', 75, 'SELECT e.first_name, e.last_name, ba.account_name, t.amount FROM transactions t JOIN employees e ON t.initiated_by = e.id JOIN bank_accounts ba ON t.to_account_id = ba.id WHERE e.department_id = 1 AND ba.owner_type = "external"', '{"type": "row_count", "min": 5}'],
+            ['CASE-020', 'Fraud Total', 'What is the total amount paid to external accounts by Finance employees?', 'intermediate', 125, 'SELECT SUM(t.amount) as total_fraud FROM transactions t JOIN employees e ON t.initiated_by = e.id JOIN bank_accounts ba ON t.to_account_id = ba.id WHERE e.department_id = 1 AND ba.owner_type = "external"', '{"type": "row_count", "min": 1}'],
+
+            // CASE-021 challenges
+            ['CASE-021', 'APT Timeline', 'Create a timeline of all suspicious/compromised activities ordered by timestamp.', 'advanced', 250, 'SELECT action_type, timestamp, ip_address, description FROM activities WHERE (description LIKE "%unknown%" OR description LIKE "%compromised%" OR description LIKE "%suspicious%" OR description LIKE "%unauthorized%" OR description LIKE "%exfiltrat%") ORDER BY timestamp', '{"type": "row_count", "min": 10}'],
+            ['CASE-021', 'Attack Duration', 'How many months did the APT attack span from first to last suspicious activity?', 'advanced', 250, 'SELECT TIMESTAMPDIFF(MONTH, MIN(timestamp), MAX(timestamp)) as attack_months FROM activities WHERE (description LIKE "%unknown%" OR description LIKE "%compromised%" OR description LIKE "%suspicious%" OR description LIKE "%unauthorized%")', '{"type": "row_count", "min": 1}'],
+
+            // CASE-022 challenges
+            ['CASE-022', 'Multi-Hop Trace', 'Starting from the main operating account (account_id = 1), trace outgoing transfers greater than 500000 for at least 2 levels.', 'advanced', 250, 'SELECT t1.transaction_id, ba1.account_name as hop1_from, ba2.account_name as hop1_to, t1.amount as hop1_amount, t2.transaction_id as hop2_txn, ba3.account_name as hop2_from, ba4.account_name as hop2_to, t2.amount as hop2_amount FROM transactions t1 JOIN bank_accounts ba1 ON t1.from_account_id = ba1.id JOIN bank_accounts ba2 ON t1.to_account_id = ba2.id JOIN transactions t2 ON t2.from_account_id = t1.to_account_id AND t2.amount > 500000 JOIN bank_accounts ba3 ON t2.from_account_id = ba3.id JOIN bank_accounts ba4 ON t2.to_account_id = ba4.id WHERE t1.from_account_id = 1 AND t1.amount > 500000', '{"type": "row_count", "min": 3}'],
+
+            // CASE-023 challenges
+            ['CASE-023', 'Critical Events', 'Find all log entries with severity "critical" or "high" from security sources.', 'advanced', 250, 'SELECT log_type, level, source, message, timestamp FROM logs WHERE level IN ("critical", "high") AND log_type = "security" ORDER BY timestamp', '{"type": "row_count", "min": 8}'],
+            ['CASE-023', 'Exploit Chain', 'Cross-reference critical logs with suspicious network connections on the same dates to reconstruct the attack.', 'advanced', 250, 'SELECT l.timestamp as log_time, l.message as log_event, n.source_ip as net_src, n.destination_ip as net_dst, n.status as net_status FROM logs l LEFT JOIN network_logs n ON DATE(l.timestamp) = DATE(n.timestamp) AND n.status = "suspicious" WHERE l.level IN ("critical", "high") ORDER BY l.timestamp', '{"type": "row_count", "min": 5}'],
+
+            // CASE-024 challenges
+            ['CASE-024', 'Manager Abuse', 'Find access logs where managers/directors/VPs performed admin actions.', 'advanced', 200, 'SELECT a.employee_id, e.first_name, e.last_name, e.level, a.resource, a.action, a.access_time FROM access_logs a JOIN employees e ON a.employee_id = e.id WHERE e.level IN ("manager", "director", "vp") AND a.resource_type = "admin"', '{"type": "row_count", "min": 10}'],
+            ['CASE-024', 'Self-Approvals', 'Find permission_changes where the employee both changed and approved their own permissions.', 'advanced', 200, 'SELECT employee_id, permission_type, change_time FROM permission_changes WHERE employee_id = changed_by', '{"type": "row_count", "min": 3}'],
+
+            // CASE-025 challenges
+            ['CASE-025', 'Exfiltration Methods', 'Calculate the total data exported by each user over the past 3 months, broken down by activity type.', 'advanced', 200, 'SELECT user_id, action_type, COUNT(*) as event_count FROM activities WHERE action_type IN ("email_send", "file_access", "network_connect") AND timestamp >= "2026-05-01" GROUP BY user_id, action_type', '{"type": "row_count", "min": 5}'],
+            ['CASE-025', 'Top Leaker', 'Which user exported the most data by event count across all methods?', 'advanced', 200, 'SELECT user_id, COUNT(*) as total_events FROM activities WHERE action_type IN ("email_send", "file_access", "network_connect") AND timestamp >= "2026-05-01" GROUP BY user_id ORDER BY total_events DESC LIMIT 1', '{"type": "value_check", "column": "user_id", "expected": "6"}'],
+
+            // CASE-026 challenges
+            ['CASE-026', 'Phantom Transactions', 'Find transactions with status = "completed" from IPs not in the 192.168.x.x range between 2 AM and 4 AM.', 'advanced', 225, 'SELECT transaction_id, amount, ip_address, transaction_date FROM transactions WHERE status = "completed" AND ip_address NOT LIKE "192.168.%" AND HOUR(transaction_date) BETWEEN 2 AND 4', '{"type": "row_count", "min": 8}'],
+            ['CASE-026', 'Total Phantom', 'What is the total value of phantom transactions?', 'advanced', 225, 'SELECT SUM(amount) as total_phantom FROM transactions WHERE status = "completed" AND ip_address NOT LIKE "192.168.%" AND HOUR(transaction_date) BETWEEN 2 AND 4', '{"type": "row_count", "min": 1}'],
+
+            // CASE-027 challenges
+            ['CASE-027', 'Concurrent Sessions', 'Find pairs of login records where the same employee logged in from different IP addresses within a 30-minute window.', 'advanced', 200, 'SELECT a.employee_id, a.ip_address as ip1, a.login_time as time1, b.ip_address as ip2, b.login_time as time2 FROM login_records a JOIN login_records b ON a.employee_id = b.employee_id AND a.ip_address != b.ip_address AND ABS(TIMESTAMPDIFF(MINUTE, a.login_time, b.login_time)) <= 30 WHERE a.login_time < b.login_time', '{"type": "row_count", "min": 3}'],
+            ['CASE-027', 'Identity Thief', 'How many employees show concurrent session patterns from different IPs?', 'advanced', 200, 'SELECT COUNT(DISTINCT a.employee_id) as compromised_count FROM login_records a JOIN login_records b ON a.employee_id = b.employee_id AND a.ip_address != b.ip_address AND ABS(TIMESTAMPDIFF(MINUTE, a.login_time, b.login_time)) <= 30 WHERE a.login_time < b.login_time', '{"type": "row_count", "min": 1}'],
+
+            // CASE-028 challenges
+            ['CASE-028', 'Info Leak', 'Find activities where confidential files were accessed and then emailed externally within 24 hours.', 'advanced', 225, 'SELECT a.user_id, a.description as file_accessed, a.timestamp as access_time, e.description as email_desc, e.timestamp as email_time FROM activities a JOIN activities e ON a.user_id = e.user_id AND e.action_type = "email_send" AND e.description LIKE "%external%" AND TIMESTAMPDIFF(HOUR, a.timestamp, e.timestamp) BETWEEN 0 AND 24 WHERE a.action_type = "file_access" AND (a.description LIKE "%confidential%" OR a.description LIKE "%strategy%" OR a.description LIKE "%roadmap%" OR a.description LIKE "%bid%")', '{"type": "row_count", "min": 3}'],
+            ['CASE-028', 'Spy Identified', 'Which employee leaked the most confidential documents via email?', 'advanced', 225, 'SELECT a.user_id, COUNT(*) as leaks FROM activities a JOIN activities e ON a.user_id = e.user_id AND e.action_type = "email_send" AND e.description LIKE "%external%" WHERE a.action_type = "file_access" AND (a.description LIKE "%confidential%" OR a.description LIKE "%strategy%" OR a.description LIKE "%roadmap%" OR a.description LIKE "%bid%") GROUP BY a.user_id ORDER BY leaks DESC LIMIT 1', '{"type": "value_check", "column": "user_id", "expected": "6"}'],
+
+            // CASE-029 challenges
+            ['CASE-029', 'Log Anomalies', 'Find log entries with timestamps that appear out of sequence (a log entry with a timestamp earlier than the previous entry).', 'advanced', 250, 'SELECT l1.id, l1.timestamp as current_time, l2.timestamp as previous_time, l1.message FROM logs l1 JOIN logs l2 ON l1.id > l2.id AND l1.timestamp < l2.timestamp LIMIT 10', '{"type": "row_count", "min": 1}'],
+            ['CASE-029', 'Tampering Evidence', 'Find duplicate log entries (same message within 5 seconds) and cross-reference with timestamps table for inconsistencies.', 'advanced', 250, 'SELECT l1.id as log1_id, l1.timestamp as log1_time, l2.id as log2_id, l2.timestamp as log2_time, l1.message FROM logs l1 JOIN logs l2 ON l1.message = l2.message AND l1.id != l2.id AND ABS(TIMESTAMPDIFF(SECOND, l1.timestamp, l2.timestamp)) <= 5', '{"type": "row_count", "min": 1}'],
+
+            // CASE-030 challenges
+            ['CASE-030', 'Connected Dots', 'Find common IP addresses that appear across both login_logs and transactions tables in suspicious contexts.', 'advanced', 500, 'SELECT ll.ip_address, COUNT(DISTINCT 'login') as login_count, COUNT(DISTINCT 'transaction') as txn_count FROM login_logs ll LEFT JOIN transactions t ON ll.ip_address = t.ip_address WHERE ll.ip_address NOT LIKE "192.168.%" GROUP BY ll.ip_address HAVING login_count > 0 AND txn_count > 0', '{"type": "row_count", "min": 2}'],
+            ['CASE-030', 'Mastermind', 'Find the employee who appears most frequently across suspicious activities (transactions from external IPs, logins from external IPs, access from unknown devices).', 'advanced', 500, 'SELECT employee_id, COUNT(*) as suspicious_count FROM (SELECT initiated_by as employee_id FROM transactions WHERE ip_address NOT LIKE "192.168.%" UNION ALL SELECT employee_id FROM login_logs WHERE ip_address NOT LIKE "192.168.%" UNION ALL SELECT employee_id FROM access_logs WHERE device_id LIKE "DEV-UNKNOWN%") combined GROUP BY employee_id ORDER BY suspicious_count DESC LIMIT 1', '{"type": "value_check", "column": "employee_id", "expected": "5"}'],
         ];
 
         $caseMap = [];

@@ -7,12 +7,10 @@ use App\Core\Application;
 class ChallengeValidator
 {
     private \PDO $db;
-    private \PDO $investigationDb;
 
     public function __construct()
     {
         $this->db = Application::getInstance()->db();
-        $this->investigationDb = Application::getInstance()->investigationDb();
     }
 
     public function validate(int $userId, int $challengeId, string $query): array
@@ -34,15 +32,17 @@ class ChallengeValidator
         $stmt = $this->db->prepare("SELECT * FROM case_databases WHERE case_id = ?");
         $stmt->execute([$case['id']]);
         $databases = $stmt->fetchAll();
-        $databaseId = $databases[0]['id'] ?? null;
+        $databaseName = $databases[0]['database_name'] ?? null;
 
-        if (!$databaseId) {
+        if (!$databaseName) {
             return ['success' => false, 'message' => 'No investigation database configured', 'xp_earned' => 0];
         }
 
+        $investigationDb = Application::getInstance()->investigationDbFor($databaseName);
+
         $startTime = microtime(true);
         try {
-            $stmt = $this->investigationDb->prepare($query);
+            $stmt = $investigationDb->prepare($query);
             $stmt->execute();
             $userRows = $stmt->fetchAll();
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);

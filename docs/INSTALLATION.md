@@ -41,10 +41,11 @@ DB_DATABASE=sql_detective
 DB_USERNAME=sql_detective_user
 DB_PASSWORD=your_secure_password
 
-INV_DB_HOST=127.0.0.1
-INV_DB_PORT=3306
-INV_DB_USERNAME=sql_detective_readonly
-INV_DB_PASSWORD=readonly_password_here
+DB_INVESTIGATION_HOST=127.0.0.1
+DB_INVESTIGATION_PORT=3306
+DB_INVESTIGATION_NAME=corporate_finance
+DB_INVESTIGATION_USER=sql_detective_readonly
+DB_INVESTIGATION_PASSWORD=readonly_password_here
 ```
 
 ## Step 4: Generate Application Key
@@ -53,14 +54,34 @@ INV_DB_PASSWORD=readonly_password_here
 php artisan key:generate
 ```
 
-## Step 5: Create Database
+## Step 5: Create Databases
+
+The seeder will automatically create and populate the investigation databases. However, the application user needs privileges on them:
 
 ```sql
 CREATE DATABASE sql_detective CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE corporate_finance CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE digital_forensics CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE employee_portal CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- For initial seeding, grant the app user full access to investigation DBs
+-- You can restrict to SELECT-only after seeding is complete
+GRANT ALL PRIVILEGES ON corporate_finance.* TO 'sql_detective_user'@'localhost';
+GRANT ALL PRIVILEGES ON digital_forensics.* TO 'sql_detective_user'@'localhost';
+GRANT ALL PRIVILEGES ON employee_portal.* TO 'sql_detective_user'@'localhost';
+FLUSH PRIVILEGES;
 ```
+
+> **After seeding completes**, revoke write privileges and keep only SELECT for the app user:
+> ```sql
+> REVOKE ALL PRIVILEGES ON corporate_finance.* FROM 'sql_detective_user'@'localhost';
+> REVOKE ALL PRIVILEGES ON digital_forensics.* FROM 'sql_detective_user'@'localhost';
+> REVOKE ALL PRIVILEGES ON employee_portal.* FROM 'sql_detective_user'@'localhost';
+> GRANT SELECT ON corporate_finance.* TO 'sql_detective_user'@'localhost';
+> GRANT SELECT ON digital_forensics.* TO 'sql_detective_user'@'localhost';
+> GRANT SELECT ON employee_portal.* TO 'sql_detective_user'@'localhost';
+> FLUSH PRIVILEGES;
+> ```
 
 ## Step 6: Create Database Users
 
@@ -90,7 +111,23 @@ php artisan migrate
 php artisan db:seed
 ```
 
-## Step 9: Configure Apache Virtual Host
+This seeds users, cases, challenges, hints, achievements, and automatically creates + loads the investigation databases (corporate_finance, digital_forensics, employee_portal) with schema, seed data, and supplemental data for all 30 cases.
+
+## Step 9: Secure Investigation Databases
+
+After seeding completes successfully, revoke write privileges from the app user on investigation databases:
+
+```sql
+REVOKE ALL PRIVILEGES ON corporate_finance.* FROM 'sql_detective_user'@'localhost';
+REVOKE ALL PRIVILEGES ON digital_forensics.* FROM 'sql_detective_user'@'localhost';
+REVOKE ALL PRIVILEGES ON employee_portal.* FROM 'sql_detective_user'@'localhost';
+GRANT SELECT ON corporate_finance.* TO 'sql_detective_user'@'localhost';
+GRANT SELECT ON digital_forensics.* TO 'sql_detective_user'@'localhost';
+GRANT SELECT ON employee_portal.* TO 'sql_detective_user'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+## Step 10: Configure Apache Virtual Host
 
 ```apache
 <VirtualHost *:80>
@@ -107,7 +144,7 @@ php artisan db:seed
 </VirtualHost>
 ```
 
-## Step 10: Test the Application
+## Step 11: Test the Application
 
 Visit `http://sql-detective.local` in your browser.
 

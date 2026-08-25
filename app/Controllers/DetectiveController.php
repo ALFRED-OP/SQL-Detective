@@ -181,13 +181,13 @@ class DetectiveController extends Controller
         $stmt = $db->prepare("SELECT * FROM case_databases WHERE case_id = ?");
         $stmt->execute([$caseId]);
         $databases = $stmt->fetchAll();
-        $databaseId = $databases[0]['id'] ?? null;
+        $databaseName = $databases[0]['database_name'] ?? null;
 
-        if (!$databaseId) {
+        if (!$databaseName) {
             return $this->json(['success' => false, 'message' => 'No investigation database configured'], 400);
         }
 
-        $investigationDb = Application::getInstance()->investigationDb();
+        $investigationDb = Application::getInstance()->investigationDbFor($databaseName);
         $startTime = microtime(true);
 
         try {
