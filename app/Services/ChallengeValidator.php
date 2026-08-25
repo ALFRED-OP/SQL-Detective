@@ -145,7 +145,9 @@ class ChallengeValidator
 
     private function getHintsUsed(int $userId, int $challengeId): int
     {
-        $hints = $this->db->prepare("SELECT id FROM hints WHERE challenge_id = ?")->execute([$challengeId])->fetchAll(PDO::FETCH_COLUMN);
+        $stmt = $this->db->prepare("SELECT id FROM hints WHERE challenge_id = ?");
+        $stmt->execute([$challengeId]);
+        $hints = $stmt->fetchAll(\PDO::FETCH_COLUMN);
         if (empty($hints)) return 0;
 
         $placeholders = implode(',', array_fill(0, count($hints), '?'));
@@ -166,23 +168,34 @@ class ChallengeValidator
     {
         $this->db->beginTransaction();
         try {
-            $challenge = $this->db->prepare("SELECT * FROM challenges WHERE id = ?")->execute([$challengeId])->fetch();
+            $stmt = $this->db->prepare("SELECT * FROM challenges WHERE id = ?");
+            $stmt->execute([$challengeId]);
+            $challenge = $stmt->fetch();
             $caseId = $challenge['case_id'];
 
-            $nextChallenge = $this->db->prepare("
+            $stmt = $this->db->prepare("
                 SELECT * FROM challenges
                 WHERE case_id = ? AND display_order > ?
                 ORDER BY display_order ASC
                 LIMIT 1
-            ")->execute([$caseId, $challenge['display_order']])->fetch();
+            ");
+            $stmt->execute([$caseId, $challenge['display_order']]);
+            $nextChallenge = $stmt->fetch();
 
-            $progress = $this->db->prepare("SELECT * FROM user_case_progress WHERE user_id = ? AND case_id = ?")->execute([$userId, $caseId])->fetch();
+            $stmt = $this->db->prepare("SELECT * FROM user_case_progress WHERE user_id = ? AND case_id = ?");
+            $stmt->execute([$userId, $caseId]);
+            $progress = $stmt->fetch();
 
-            $totalChallenges = $this->db->prepare("SELECT COUNT(*) FROM challenges WHERE case_id = ?")->execute([$caseId])->fetchColumn();
-            $solvedChallenges = $this->db->prepare("
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM challenges WHERE case_id = ?");
+            $stmt->execute([$caseId]);
+            $totalChallenges = (int)$stmt->fetchColumn();
+
+            $stmt = $this->db->prepare("
                 SELECT COUNT(DISTINCT challenge_id) FROM challenge_attempts
                 WHERE user_id = ? AND challenge_id IN (SELECT id FROM challenges WHERE case_id = ?) AND result_status = 'success'
-            ")->execute([$userId, $caseId])->fetchColumn();
+            ");
+            $stmt->execute([$userId, $caseId]);
+            $solvedChallenges = (int)$stmt->fetchColumn();
 
             $progressPercent = $totalChallenges > 0 ? round(($solvedChallenges / $totalChallenges) * 100, 2) : 0;
             $completed = $solvedChallenges >= $totalChallenges && $totalChallenges > 0;
@@ -251,7 +264,9 @@ class ChallengeValidator
 
     private function updateUserLevel(int $userId): void
     {
-        $user = $this->db->prepare("SELECT xp, level FROM users WHERE id = ?")->execute([$userId])->fetch();
+        $stmt = $this->db->prepare("SELECT xp, level FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
         $newLevel = $this->calculateLevel($user['xp']);
         if ($newLevel > $user['level']) {
             $rank = $this->getRankForLevel($newLevel);
