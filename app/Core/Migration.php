@@ -46,7 +46,7 @@ class Migration
 
             echo "Running migration: $migration\n";
             require_once $file;
-            $className = 'Database\\Migrations\\' . $migration;
+            $className = $this->resolveClassName($file);
 
             if (!class_exists($className)) {
                 throw new \RuntimeException("Migration class $className not found in $file");
@@ -77,8 +77,8 @@ class Migration
 
             foreach ($batchMigrations as $migration) {
                 echo "Rolling back: {$migration['migration']}\n";
-                $className = 'Database\\Migrations\\' . $migration['migration'];
-                if (class_exists($className)) {
+                $className = $this->resolveClassNameFromMigration($migration['migration']);
+                if ($className && class_exists($className)) {
                     $instance = new $className($this->db);
                     $instance->down();
                 }
@@ -142,5 +142,26 @@ class Migration
     {
         $stmt = $this->db->prepare("DELETE FROM {$this->migrationsTable} WHERE migration = ?");
         $stmt->execute([$migration]);
+    }
+
+    private function resolveClassName(string $filePath): string
+    {
+        $content = file_get_contents($filePath);
+        if (preg_match('/^\s*class\s+(\w+)/m', $content, $matches)) {
+            return 'Database\\Migrations\\' . $matches[1];
+        }
+        $migration = basename($filePath, '.php');
+        return 'Database\\Migrations\\' . $migration;
+    }
+
+    private function resolveClassNameFromMigration(string $migration): ?string
+    {
+        $files = glob($this->migrationsPath . '*.php');
+        foreach ($files as $file) {
+            if (basename($file, '.php') === $migration) {
+                return $this->resolveClassName($file);
+            }
+        }
+        return null;
     }
 }

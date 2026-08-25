@@ -7,7 +7,7 @@ use Laminas\Diactoros\Response\JsonResponse;
 
 class CsrfMiddleware
 {
-    public function handle(ServerRequestInterface $request): bool
+    public function handle(ServerRequestInterface $request, ?string $param = null): bool
     {
         if (!config('security.csrf.enabled')) {
             return true;
@@ -45,7 +45,8 @@ class CsrfMiddleware
             }
             http_response_code(419);
             header('Content-Type: text/html');
-            echo '<html><body><h1>419 - CSRF Token Mismatch</h1><p>Please refresh the page and try again.</p></body></html>';
+            $view = new \App\Core\View();
+            echo $view->render('errors/419', ['message' => 'CSRF token mismatch. Please refresh the page and try again.']);
             exit;
         }
 

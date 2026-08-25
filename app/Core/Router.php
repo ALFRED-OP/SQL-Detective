@@ -167,7 +167,17 @@ class Router
                 $vars = $routeInfo[2];
 
                 $route = $this->findRoute($method, $uri);
-                if ($route && !$this->runMiddleware($route['middleware'], $request)) {
+
+                $middlewares = $route ? $route['middleware'] : [];
+
+                if (!in_array($method, ['GET', 'HEAD', 'OPTIONS'])) {
+                    $csrfExcluded = ['/api/query', '/api/challenge/submit'];
+                    if (!in_array($uri, $csrfExcluded)) {
+                        array_unshift($middlewares, 'csrf');
+                    }
+                }
+
+                if (!$this->runMiddleware($middlewares, $request)) {
                     return;
                 }
 
