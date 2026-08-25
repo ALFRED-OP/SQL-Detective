@@ -501,17 +501,17 @@ class DatabaseSeeder
     {
         $challenges = [
             // CASE-001 challenges
-            ['CASE-001', 'Identify Suspicious Transactions', 'Find all transactions that occurred between 2:00 AM and 4:00 AM with amounts greater than ₹5,00,000.', 'easy', 50, 'SELECT * FROM transactions WHERE HOUR(transaction_date) BETWEEN 2 AND 4 AND amount > 500000', '{"type": "row_count", "min": 5}'],
-            ['CASE-001', 'Find the Culprit', 'Which employee initiated the most suspicious (late-night) transactions? Return their employee_code and name.', 'medium', 100, 'SELECT e.employee_code, e.first_name, e.last_name FROM employees e JOIN transactions t ON e.id = t.initiated_by WHERE HOUR(t.transaction_date) BETWEEN 2 AND 4 GROUP BY e.id ORDER BY COUNT(*) DESC LIMIT 1', '{"type": "value_check", "column": "employee_code", "expected": "EMP005"}'],
-            ['CASE-001', 'Track the Device', 'What device was used for the suspicious transactions? Return the device_id.', 'hard', 150, 'SELECT DISTINCT device_id FROM transactions WHERE HOUR(transaction_date) BETWEEN 2 AND 4 AND amount > 500000', '{"type": "row_count", "min": 1}'],
+            ['CASE-001', 'Identify Suspicious Transactions', 'Find all transactions that occurred between 2:00 AM and 4:00 AM with amounts greater than ₹5,00,000.', 'beginner', 50, 'SELECT * FROM transactions WHERE HOUR(transaction_date) BETWEEN 2 AND 4 AND amount > 500000', '{"type": "row_count", "min": 5}'],
+            ['CASE-001', 'Find the Culprit', 'Which employee initiated the most suspicious (late-night) transactions? Return their employee_code and name.', 'intermediate', 100, 'SELECT e.employee_code, e.first_name, e.last_name FROM employees e JOIN transactions t ON e.id = t.initiated_by WHERE HOUR(t.transaction_date) BETWEEN 2 AND 4 GROUP BY e.id ORDER BY COUNT(*) DESC LIMIT 1', '{"type": "value_check", "column": "employee_code", "expected": "EMP005"}'],
+            ['CASE-001', 'Track the Device', 'What device was used for the suspicious transactions? Return the device_id.', 'advanced', 150, 'SELECT DISTINCT device_id FROM transactions WHERE HOUR(transaction_date) BETWEEN 2 AND 4 AND amount > 500000', '{"type": "row_count", "min": 1}'],
 
             // CASE-002 challenges
-            ['CASE-002', 'External Access', 'Find all activities from IPs not in the 10.0.x.x or 192.168.x.x range on August 12, 2026.', 'easy', 50, 'SELECT * FROM activities WHERE timestamp LIKE "2026-08-12%" AND ip_address NOT LIKE "10.0.%" AND ip_address NOT LIKE "192.168.%"', '{"type": "row_count", "min": 3}'],
-            ['CASE-002', 'Compromised Files', 'Which files were accessed from the compromised device (DEV-UNKNOWN-01)?', 'medium', 100, 'SELECT f.file_name, f.file_path FROM files f JOIN activities a ON f.device_id = a.device_id WHERE a.device_id = (SELECT id FROM devices WHERE device_id = "DEV-UNKNOWN-01")', '{"type": "row_count", "min": 1}'],
+            ['CASE-002', 'External Access', 'Find all activities from IPs not in the 10.0.x.x or 192.168.x.x range on August 12, 2026.', 'beginner', 50, 'SELECT * FROM activities WHERE timestamp LIKE "2026-08-12%" AND ip_address NOT LIKE "10.0.%" AND ip_address NOT LIKE "192.168.%"', '{"type": "row_count", "min": 3}'],
+            ['CASE-002', 'Compromised Files', 'Which files were accessed from the compromised device (DEV-UNKNOWN-01)?', 'intermediate', 100, 'SELECT f.file_name, f.file_path FROM files f JOIN activities a ON f.device_id = a.device_id WHERE a.device_id = (SELECT id FROM devices WHERE device_id = "DEV-UNKNOWN-01")', '{"type": "row_count", "min": 1}'],
 
             // CASE-003 challenges
-            ['CASE-003', 'Self-Escalation', 'Find all permission changes where employee_id = changed_by.', 'easy', 50, 'SELECT * FROM permission_changes WHERE employee_id = changed_by', '{"type": "row_count", "min": 2}'],
-            ['CASE-003', 'Data Exports', 'Which employees exported data from suspicious IPs?', 'medium', 100, 'SELECT DISTINCT employee_id FROM access_logs WHERE ip_address NOT LIKE "192.168.%" AND action = "export"', '{"type": "row_count", "min": 1}'],
+            ['CASE-003', 'Self-Escalation', 'Find all permission changes where employee_id = changed_by.', 'beginner', 50, 'SELECT * FROM permission_changes WHERE employee_id = changed_by', '{"type": "row_count", "min": 2}'],
+            ['CASE-003', 'Data Exports', 'Which employees exported data from suspicious IPs?', 'intermediate', 100, 'SELECT DISTINCT employee_id FROM access_logs WHERE ip_address NOT LIKE "192.168.%" AND action = "export"', '{"type": "row_count", "min": 1}'],
         ];
 
         $caseMap = [];

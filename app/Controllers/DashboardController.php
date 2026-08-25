@@ -13,7 +13,9 @@ class DashboardController extends Controller
         $userId = $this->user();
         $db = Application::getInstance()->db();
 
-        $user = $db->prepare("SELECT * FROM users WHERE id = ?")->execute([$userId])->fetch();
+        $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
 
         $xpForNextLevel = $this->xpForLevel($user['level'] + 1);
         $xpForCurrentLevel = $this->xpForLevel($user['level']);
@@ -21,47 +23,57 @@ class DashboardController extends Controller
         $requiredXp = $xpForNextLevel - $xpForCurrentLevel;
         $progressPercent = $requiredXp > 0 ? min(100, ($progressXp / $requiredXp) * 100) : 100;
 
-        $caseStats = $db->prepare("
+        $stmt = $db->prepare("
             SELECT
                 COUNT(*) as total_cases,
                 SUM(CASE WHEN completed THEN 1 ELSE 0 END) as completed_cases,
                 SUM(CASE WHEN NOT completed THEN 1 ELSE 0 END) as remaining_cases
             FROM user_case_progress
             WHERE user_id = ?
-        ")->execute([$userId])->fetch();
+        ");
+        $stmt->execute([$userId]);
+        $caseStats = $stmt->fetch();
 
-        $recentCases = $db->prepare("
+        $stmt = $db->prepare("
             SELECT c.*, ucp.progress_percentage, ucp.completed, ucp.completed_at, ucp.xp_earned
             FROM user_case_progress ucp
             JOIN cases c ON c.id = ucp.case_id
             WHERE ucp.user_id = ?
             ORDER BY ucp.updated_at DESC
             LIMIT 5
-        ")->execute([$userId])->fetchAll();
+        ");
+        $stmt->execute([$userId]);
+        $recentCases = $stmt->fetchAll();
 
-        $recentAchievements = $db->prepare("
+        $stmt = $db->prepare("
             SELECT a.*, ua.unlocked_at
             FROM user_achievements ua
             JOIN achievements a ON a.id = ua.achievement_id
             WHERE ua.user_id = ?
             ORDER BY ua.unlocked_at DESC
             LIMIT 5
-        ")->execute([$userId])->fetchAll();
+        ");
+        $stmt->execute([$userId]);
+        $recentAchievements = $stmt->fetchAll();
 
-        $leaderboardPos = $db->prepare("
+        $stmt = $db->prepare("
             SELECT COUNT(*) + 1 as rank
             FROM users
             WHERE xp > ? AND status = 'active'
-        ")->execute([$user['xp']])->fetchColumn();
+        ");
+        $stmt->execute([$user['xp']]);
+        $leaderboardPos = $stmt->fetchColumn();
 
-        $recentQueries = $db->prepare("
+        $stmt = $db->prepare("
             SELECT qh.*, c.title as case_title, c.case_code
             FROM query_history qh
             JOIN cases c ON c.id = qh.case_id
             WHERE qh.user_id = ?
             ORDER BY qh.created_at DESC
             LIMIT 10
-        ")->execute([$userId])->fetchAll();
+        ");
+        $stmt->execute([$userId]);
+        $recentQueries = $stmt->fetchAll();
 
         $streak = $this->calculateStreak($userId);
 
@@ -90,14 +102,16 @@ class DashboardController extends Controller
         $userId = $this->user();
         $db = Application::getInstance()->db();
 
-        $history = $db->prepare("
+        $stmt = $db->prepare("
             SELECT ucp.xp_earned, ucp.completed_at, c.title, c.case_code
             FROM user_case_progress ucp
             JOIN cases c ON c.id = ucp.case_id
             WHERE ucp.user_id = ? AND ucp.completed = 1
             ORDER BY ucp.completed_at DESC
             LIMIT 20
-        ")->execute([$userId])->fetchAll();
+        ");
+        $stmt->execute([$userId]);
+        $history = $stmt->fetchAll();
 
         return $this->json(['history' => $history]);
     }
@@ -107,14 +121,16 @@ class DashboardController extends Controller
         $userId = $this->user();
         $db = Application::getInstance()->db();
 
-        $queries = $db->prepare("
+        $stmt = $db->prepare("
             SELECT qh.*, c.title as case_title, c.case_code
             FROM query_history qh
             JOIN cases c ON c.id = qh.case_id
             WHERE qh.user_id = ?
             ORDER BY qh.created_at DESC
             LIMIT 20
-        ")->execute([$userId])->fetchAll();
+        ");
+        $stmt->execute([$userId]);
+        $queries = $stmt->fetchAll();
 
         return $this->json(['queries' => $queries]);
     }
@@ -124,7 +140,7 @@ class DashboardController extends Controller
         $userId = $this->user();
         $db = Application::getInstance()->db();
 
-        $stats = $db->prepare("
+        $stmt = $db->prepare("
             SELECT
                 u.xp,
                 u.level,
@@ -139,7 +155,9 @@ class DashboardController extends Controller
             LEFT JOIN user_achievements ua ON ua.user_id = u.id
             WHERE u.id = ?
             GROUP BY u.id
-        ")->execute([$userId])->fetch();
+        ");
+        $stmt->execute([$userId]);
+        $stats = $stmt->fetch();
 
         return $this->json(['stats' => $stats]);
     }
@@ -154,12 +172,14 @@ class DashboardController extends Controller
     {
         $db = Application::getInstance()->db();
 
-        $dates = $db->prepare("
+        $stmt = $db->prepare("
             SELECT DATE(completed_at) as date
             FROM user_case_progress
             WHERE user_id = ? AND completed = 1
             ORDER BY completed_at DESC
-        ")->execute([$userId])->fetchAll(PDO::FETCH_COLUMN);
+        ");
+        $stmt->execute([$userId]);
+        $dates = $stmt->fetchAll(\PDO::FETCH_COLUMN);
 
         if (empty($dates)) return 0;
 

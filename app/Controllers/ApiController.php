@@ -37,12 +37,17 @@ class ApiController extends Controller
         }
 
         $db = Application::getInstance()->db();
-        $case = $db->prepare("SELECT * FROM cases WHERE id = ?")->execute([$caseId])->fetch();
+
+        $stmt = $db->prepare("SELECT * FROM cases WHERE id = ?");
+        $stmt->execute([$caseId]);
+        $case = $stmt->fetch();
         if (!$case) {
             return $this->json(['success' => false, 'message' => 'Case not found'], 404);
         }
 
-        $databases = $db->prepare("SELECT * FROM case_databases WHERE case_id = ?")->execute([$caseId])->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM case_databases WHERE case_id = ?");
+        $stmt->execute([$caseId]);
+        $databases = $stmt->fetchAll();
         $databaseId = $databases[0]['id'] ?? null;
 
         if (!$databaseId) {
@@ -64,10 +69,11 @@ class ApiController extends Controller
                 $rows = array_slice($rows, 0, $maxRows);
             }
 
-            $db->prepare("
+            $stmt = $db->prepare("
                 INSERT INTO query_history (user_id, case_id, query, status, execution_time_ms, rows_returned)
                 VALUES (?, ?, ?, 'success', ?, ?)
-            ")->execute([$userId, $caseId, $query, $executionTime, $rowCount]);
+            ");
+            $stmt->execute([$userId, $caseId, $query, $executionTime, $rowCount]);
 
             return $this->json([
                 'success' => true,
@@ -79,10 +85,11 @@ class ApiController extends Controller
         } catch (\PDOException $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
             $message = $this->sanitizeError($e->getMessage());
-            $db->prepare("
+            $stmt = $db->prepare("
                 INSERT INTO query_history (user_id, case_id, query, status, execution_time_ms, rows_returned, error_message)
                 VALUES (?, ?, ?, 'error', ?, 0, ?)
-            ")->execute([$userId, $caseId, $query, $executionTime, $message]);
+            ");
+            $stmt->execute([$userId, $caseId, $query, $executionTime, $message]);
             return $this->json(['success' => false, 'message' => $message, 'type' => 'sql_error'], 400);
         }
     }
@@ -92,19 +99,25 @@ class ApiController extends Controller
         $caseId = (int)$vars['case'];
         $db = Application::getInstance()->db();
 
-        $databases = $db->prepare("SELECT * FROM case_databases WHERE case_id = ?")->execute([$caseId])->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM case_databases WHERE case_id = ?");
+        $stmt->execute([$caseId]);
+        $databases = $stmt->fetchAll();
         $databaseId = $databases[0]['id'] ?? null;
 
         if (!$databaseId) {
             return $this->json(['tables' => [], 'relationships' => []]);
         }
 
-        $tables = $db->prepare("SELECT * FROM database_tables WHERE case_database_id = ? ORDER BY display_order")->execute([$databaseId])->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM database_tables WHERE case_database_id = ? ORDER BY display_order");
+        $stmt->execute([$databaseId]);
+        $tables = $stmt->fetchAll();
         foreach ($tables as &$table) {
-            $table['columns'] = $db->prepare("SELECT * FROM database_columns WHERE table_id = ? ORDER BY display_order")->execute([$table['id']])->fetchAll();
+            $colStmt = $db->prepare("SELECT * FROM database_columns WHERE table_id = ? ORDER BY display_order");
+            $colStmt->execute([$table['id']]);
+            $table['columns'] = $colStmt->fetchAll();
         }
 
-        $relationships = $db->prepare("
+        $stmt = $db->prepare("
             SELECT
                 dt1.table_name as from_table,
                 dc1.column_name as from_column,
@@ -116,7 +129,9 @@ class ApiController extends Controller
             JOIN database_tables dt2 ON dt2.id = dc2.table_id
             WHERE (dc1.is_primary_key = 1 OR dc2.is_primary_key = 1)
             AND dt1.case_database_id = ? AND dt2.case_database_id = ?
-        ")->execute([$databaseId, $databaseId])->fetchAll();
+        ");
+        $stmt->execute([$databaseId, $databaseId]);
+        $relationships = $stmt->fetchAll();
 
         return $this->json(['tables' => $tables, 'relationships' => $relationships]);
     }
@@ -126,8 +141,13 @@ class ApiController extends Controller
         $caseId = (int)$vars['case'];
         $db = Application::getInstance()->db();
 
-        $evidence = $db->prepare("SELECT * FROM evidence WHERE case_id = ? ORDER BY importance DESC, id")->execute([$caseId])->fetchAll();
-        $suspects = $db->prepare("SELECT * FROM suspects WHERE case_id = ? ORDER BY id")->execute([$caseId])->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM evidence WHERE case_id = ? ORDER BY importance DESC, id");
+        $stmt->execute([$caseId]);
+        $evidence = $stmt->fetchAll();
+
+        $stmt = $db->prepare("SELECT * FROM suspects WHERE case_id = ? ORDER BY id");
+        $stmt->execute([$caseId]);
+        $suspects = $stmt->fetchAll();
 
         return $this->json(['evidence' => $evidence, 'suspects' => $suspects]);
     }
@@ -138,23 +158,32 @@ class ApiController extends Controller
         $userId = $this->user();
         $db = Application::getInstance()->db();
 
-        $challenges = $db->prepare("SELECT * FROM challenges WHERE case_id = ? ORDER BY display_order")->execute([$caseId])->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM challenges WHERE case_id = ? ORDER BY display_order");
+        $stmt->execute([$caseId]);
+        $challenges = $stmt->fetchAll();
 
-        $progress = $db->prepare("SELECT current_challenge_id FROM user_case_progress WHERE user_id = ? AND case_id = ?")->execute([$userId, $caseId])->fetch();
+        $stmt = $db->prepare("SELECT current_challenge_id FROM user_case_progress WHERE user_id = ? AND case_id = ?");
+        $stmt->execute([$userId, $caseId]);
+        $progress = $stmt->fetch();
         $currentChallengeId = $progress['current_challenge_id'] ?? null;
 
         $attempts = [];
-        if ($userId) {
-            $attempts = $db->prepare("
+        if ($userId && !empty($challenges)) {
+            $placeholders = implode(',', array_fill(0, count($challenges), '?'));
+            $stmt = $db->prepare("
                 SELECT challenge_id, COUNT(*) as attempts, MAX(CASE WHEN result_status = 'success' THEN 1 ELSE 0 END) as solved
                 FROM challenge_attempts
-                WHERE user_id = ? AND challenge_id IN (" . implode(',', array_fill(0, count($challenges), '?')) . ")
+                WHERE user_id = ? AND challenge_id IN ($placeholders)
                 GROUP BY challenge_id
-            ")->execute(array_merge([$userId], array_column($challenges, 'id')))->fetchAll(PDO::FETCH_KEY_PAIR);
+            ");
+            $stmt->execute(array_merge([$userId], array_column($challenges, 'id')));
+            $attempts = $stmt->fetchAll(\PDO::FETCH_KEY_PAIR);
         }
 
         foreach ($challenges as &$challenge) {
-            $challenge['hints'] = $db->prepare("SELECT * FROM hints WHERE challenge_id = ? ORDER BY hint_level")->execute([$challenge['id']])->fetchAll();
+            $hintStmt = $db->prepare("SELECT * FROM hints WHERE challenge_id = ? ORDER BY hint_level");
+            $hintStmt->execute([$challenge['id']]);
+            $challenge['hints'] = $hintStmt->fetchAll();
             $challenge['is_current'] = $challenge['id'] == $currentChallengeId;
             $challenge['attempts'] = $attempts[$challenge['id']] ?? ['attempts' => 0, 'solved' => 0];
         }
@@ -180,7 +209,7 @@ class ApiController extends Controller
 
         $result = $this->challengeValidator->validate($userId, $challengeId, $query);
 
-        if ($result['success']) {
+        if ($result['success'] && ($result['xp_earned'] ?? 0) > 0) {
             $this->awardXP($userId, $result['xp_earned']);
             $this->checkAchievements($userId);
         }
@@ -195,7 +224,7 @@ class ApiController extends Controller
         $perPage = min(50, max(1, (int)($_GET['per_page'] ?? 20)));
         $offset = ($page - 1) * $perPage;
 
-        $leaders = $db->prepare("
+        $stmt = $db->prepare("
             SELECT u.id, u.username, u.display_name, u.xp, u.level, u.detective_rank,
                    COUNT(DISTINCT ucp.case_id) as cases_completed,
                    COUNT(DISTINCT ua.achievement_id) as achievements_unlocked
@@ -206,7 +235,9 @@ class ApiController extends Controller
             GROUP BY u.id
             ORDER BY u.xp DESC
             LIMIT ? OFFSET ?
-        ")->execute([$perPage, $offset])->fetchAll();
+        ");
+        $stmt->execute([$perPage, $offset]);
+        $leaders = $stmt->fetchAll();
 
         $total = $db->query("SELECT COUNT(*) FROM users WHERE status = 'active'")->fetchColumn();
 
@@ -226,7 +257,9 @@ class ApiController extends Controller
         $userId = $this->user();
         $db = Application::getInstance()->db();
 
-        $user = $db->prepare("SELECT id, username, email, display_name, xp, level, detective_rank, role, created_at FROM users WHERE id = ?")->execute([$userId])->fetch();
+        $stmt = $db->prepare("SELECT id, username, email, display_name, xp, level, detective_rank, role, created_at FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
 
         return $this->json(['user' => $user]);
     }
@@ -236,13 +269,15 @@ class ApiController extends Controller
         $userId = $this->user();
         $db = Application::getInstance()->db();
 
-        $achievements = $db->prepare("
+        $stmt = $db->prepare("
             SELECT a.*, ua.unlocked_at,
                    CASE WHEN ua.id IS NOT NULL THEN 1 ELSE 0 END as unlocked
             FROM achievements a
             LEFT JOIN user_achievements ua ON ua.achievement_id = a.id AND ua.user_id = ?
             ORDER BY a.requirement_type, a.requirement_value
-        ")->execute([$userId])->fetchAll();
+        ");
+        $stmt->execute([$userId]);
+        $achievements = $stmt->fetchAll();
 
         return $this->json(['achievements' => $achievements]);
     }
@@ -272,7 +307,9 @@ class ApiController extends Controller
     private function updateLevel(int $userId): void
     {
         $db = Application::getInstance()->db();
-        $user = $db->prepare("SELECT xp, level FROM users WHERE id = ?")->execute([$userId])->fetch();
+        $stmt = $db->prepare("SELECT xp, level FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
 
         $newLevel = $this->calculateLevel($user['xp']);
         if ($newLevel > $user['level']) {
@@ -305,9 +342,12 @@ class ApiController extends Controller
     private function checkAchievements(int $userId): void
     {
         $db = Application::getInstance()->db();
-        $user = $db->prepare("SELECT * FROM users WHERE id = ?")->execute([$userId])->fetch();
 
-        $stats = $db->prepare("
+        $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
+
+        $stmt = $db->prepare("
             SELECT
                 COUNT(DISTINCT ucp.case_id) as cases_completed,
                 COUNT(DISTINCT ca.challenge_id) as challenges_solved,
@@ -316,11 +356,15 @@ class ApiController extends Controller
             LEFT JOIN user_case_progress ucp ON ucp.user_id = u.id AND ucp.completed = 1
             LEFT JOIN challenge_attempts ca ON ca.user_id = u.id AND ca.result_status = 'success'
             WHERE u.id = ?
-        ")->execute([$userId])->fetch();
+        ");
+        $stmt->execute([$userId]);
+        $stats = $stmt->fetch();
 
         $streak = $this->calculateStreak($userId);
 
-        $achievements = $db->prepare("SELECT * FROM achievements WHERE id NOT IN (SELECT achievement_id FROM user_achievements WHERE user_id = ?)")->execute([$userId])->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM achievements WHERE id NOT IN (SELECT achievement_id FROM user_achievements WHERE user_id = ?)");
+        $stmt->execute([$userId]);
+        $achievements = $stmt->fetchAll();
 
         foreach ($achievements as $achievement) {
             $unlocked = false;
@@ -360,7 +404,9 @@ class ApiController extends Controller
     private function calculateStreak(int $userId): int
     {
         $db = Application::getInstance()->db();
-        $dates = $db->prepare("SELECT DATE(completed_at) as date FROM user_case_progress WHERE user_id = ? AND completed = 1 ORDER BY completed_at DESC")->execute([$userId])->fetchAll(PDO::FETCH_COLUMN);
+        $stmt = $db->prepare("SELECT DATE(completed_at) as date FROM user_case_progress WHERE user_id = ? AND completed = 1 ORDER BY completed_at DESC");
+        $stmt->execute([$userId]);
+        $dates = $stmt->fetchAll(\PDO::FETCH_COLUMN);
         if (empty($dates)) return 0;
 
         $streak = 0;

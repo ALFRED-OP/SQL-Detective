@@ -15,7 +15,9 @@ class AchievementController extends Controller
 
         $userUnlocked = [];
         if ($this->user()) {
-            $userUnlocked = $db->prepare("SELECT achievement_id FROM user_achievements WHERE user_id = ?")->execute([$this->user()])->fetchAll(PDO::FETCH_COLUMN);
+            $stmt = $db->prepare("SELECT achievement_id FROM user_achievements WHERE user_id = ?");
+            $stmt->execute([$this->user()]);
+            $userUnlocked = $stmt->fetchAll(\PDO::FETCH_COLUMN);
         }
 
         return $this->view('achievements.index', [

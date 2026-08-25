@@ -102,10 +102,6 @@ class Router
         return $this;
     }
 
-    private string $currentRouteName = '';
-    private string $currentPrefix = '';
-    private array $currentMiddleware = [];
-
     private function getCurrentPrefix(): string
     {
         return $this->currentPrefix;
@@ -171,8 +167,18 @@ class Router
                 $middlewares = $route ? $route['middleware'] : [];
 
                 if (!in_array($method, ['GET', 'HEAD', 'OPTIONS'])) {
-                    $csrfExcluded = ['/api/query', '/api/challenge/submit'];
-                    if (!in_array($uri, $csrfExcluded)) {
+                    $csrfExcluded = ['/api/query/execute'];
+                    $csrfExcludedPrefixes = ['/api/challenges/'];
+                    $isExcluded = in_array($uri, $csrfExcluded);
+                    if (!$isExcluded) {
+                        foreach ($csrfExcludedPrefixes as $prefix) {
+                            if (str_starts_with($uri, $prefix) && str_ends_with($uri, '/submit')) {
+                                $isExcluded = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!$isExcluded) {
                         array_unshift($middlewares, 'csrf');
                     }
                 }

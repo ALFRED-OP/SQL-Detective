@@ -54,10 +54,10 @@ abstract class Controller
             return $validator->validate();
         } catch (\App\Validators\ValidationException $e) {
             if (is_ajax()) {
-                return_json(['success' => false, 'errors' => $e->getErrors()]);
+                json_response(['success' => false, 'errors' => $e->getErrors()]);
             }
-            set_flash('error', $e->getMessage());
-            redirect_back();
+            flash('error', $e->getMessage());
+            back();
         }
         return [];
     }

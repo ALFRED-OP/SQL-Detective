@@ -45,14 +45,16 @@ class AdminController extends Controller
         $perPage = 20;
         $offset = ($page - 1) * $perPage;
 
-        $users = $db->prepare("
+        $stmt = $db->prepare("
             SELECT u.*, COUNT(DISTINCT ucp.case_id) as cases_completed
             FROM users u
             LEFT JOIN user_case_progress ucp ON ucp.user_id = u.id AND ucp.completed = 1
             GROUP BY u.id
             ORDER BY u.created_at DESC
             LIMIT ? OFFSET ?
-        ")->execute([$perPage, $offset])->fetchAll();
+        ");
+        $stmt->execute([$perPage, $offset]);
+        $users = $stmt->fetchAll();
 
         $total = $db->query("SELECT COUNT(*) FROM users")->fetchColumn();
 
@@ -76,7 +78,9 @@ class AdminController extends Controller
             return $this->json(['success' => false, 'message' => 'Cannot toggle own account'], 400);
         }
 
-        $user = $db->prepare("SELECT status FROM users WHERE id = ?")->execute([$userId])->fetch();
+        $stmt = $db->prepare("SELECT status FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
         if (!$user) {
             return $this->json(['success' => false, 'message' => 'User not found'], 404);
         }
@@ -94,14 +98,16 @@ class AdminController extends Controller
         $perPage = 20;
         $offset = ($page - 1) * $perPage;
 
-        $cases = $db->prepare("
+        $stmt = $db->prepare("
             SELECT c.*, COUNT(DISTINCT ch.id) as challenge_count
             FROM cases c
             LEFT JOIN challenges ch ON ch.case_id = c.id
             GROUP BY c.id
             ORDER BY c.created_at DESC
             LIMIT ? OFFSET ?
-        ")->execute([$perPage, $offset])->fetchAll();
+        ");
+        $stmt->execute([$perPage, $offset]);
+        $cases = $stmt->fetchAll();
 
         $total = $db->query("SELECT COUNT(*) FROM cases")->fetchColumn();
 
@@ -160,7 +166,9 @@ class AdminController extends Controller
         $caseId = (int)$vars['case'];
         $db = Application::getInstance()->db();
 
-        $case = $db->prepare("SELECT * FROM cases WHERE id = ?")->execute([$caseId])->fetch();
+        $stmt = $db->prepare("SELECT * FROM cases WHERE id = ?");
+        $stmt->execute([$caseId]);
+        $case = $stmt->fetch();
         if (!$case) $this->abort(404);
 
         return $this->view('admin.edit-case', ['case' => $case]);
@@ -223,13 +231,15 @@ class AdminController extends Controller
         $perPage = 20;
         $offset = ($page - 1) * $perPage;
 
-        $challenges = $db->prepare("
+        $stmt = $db->prepare("
             SELECT ch.*, c.title as case_title, c.case_code
             FROM challenges ch
             JOIN cases c ON c.id = ch.case_id
             ORDER BY ch.created_at DESC
             LIMIT ? OFFSET ?
-        ")->execute([$perPage, $offset])->fetchAll();
+        ");
+        $stmt->execute([$perPage, $offset]);
+        $challenges = $stmt->fetchAll();
 
         $total = $db->query("SELECT COUNT(*) FROM challenges")->fetchColumn();
 
@@ -283,12 +293,14 @@ class AdminController extends Controller
     public function evidence(): HtmlResponse
     {
         $db = Application::getInstance()->db();
-        $evidence = $db->prepare("
+        $stmt = $db->prepare("
             SELECT e.*, c.title as case_title, c.case_code
             FROM evidence e
             JOIN cases c ON c.id = e.case_id
             ORDER BY e.created_at DESC
-        ")->execute()->fetchAll();
+        ");
+        $stmt->execute();
+        $evidence = $stmt->fetchAll();
 
         return $this->view('admin.evidence', ['evidence' => $evidence]);
     }
@@ -296,12 +308,14 @@ class AdminController extends Controller
     public function suspects(): HtmlResponse
     {
         $db = Application::getInstance()->db();
-        $suspects = $db->prepare("
+        $stmt = $db->prepare("
             SELECT s.*, c.title as case_title, c.case_code
             FROM suspects s
             JOIN cases c ON c.id = s.case_id
             ORDER BY s.created_at DESC
-        ")->execute()->fetchAll();
+        ");
+        $stmt->execute();
+        $suspects = $stmt->fetchAll();
 
         return $this->view('admin.suspects', ['suspects' => $suspects]);
     }
@@ -309,13 +323,15 @@ class AdminController extends Controller
     public function hints(): HtmlResponse
     {
         $db = Application::getInstance()->db();
-        $hints = $db->prepare("
+        $stmt = $db->prepare("
             SELECT h.*, ch.title as challenge_title, c.title as case_title
             FROM hints h
             JOIN challenges ch ON ch.id = h.challenge_id
             JOIN cases c ON c.id = ch.case_id
             ORDER BY h.created_at DESC
-        ")->execute()->fetchAll();
+        ");
+        $stmt->execute();
+        $hints = $stmt->fetchAll();
 
         return $this->view('admin.hints', ['hints' => $hints]);
     }
@@ -335,7 +351,7 @@ class AdminController extends Controller
         $perPage = 50;
         $offset = ($page - 1) * $perPage;
 
-        $submissions = $db->prepare("
+        $stmt = $db->prepare("
             SELECT ca.*, u.display_name as user_name, ch.title as challenge_title, c.case_code
             FROM challenge_attempts ca
             JOIN users u ON u.id = ca.user_id
@@ -343,7 +359,9 @@ class AdminController extends Controller
             JOIN cases c ON c.id = ch.case_id
             ORDER BY ca.created_at DESC
             LIMIT ? OFFSET ?
-        ")->execute([$perPage, $offset])->fetchAll();
+        ");
+        $stmt->execute([$perPage, $offset]);
+        $submissions = $stmt->fetchAll();
 
         $total = $db->query("SELECT COUNT(*) FROM challenge_attempts")->fetchColumn();
 
@@ -365,13 +383,15 @@ class AdminController extends Controller
         $perPage = 50;
         $offset = ($page - 1) * $perPage;
 
-        $logs = $db->prepare("
+        $stmt = $db->prepare("
             SELECT al.*, u.display_name as user_name
             FROM audit_logs al
             LEFT JOIN users u ON u.id = al.user_id
             ORDER BY al.created_at DESC
             LIMIT ? OFFSET ?
-        ")->execute([$perPage, $offset])->fetchAll();
+        ");
+        $stmt->execute([$perPage, $offset]);
+        $logs = $stmt->fetchAll();
 
         $total = $db->query("SELECT COUNT(*) FROM audit_logs")->fetchColumn();
 

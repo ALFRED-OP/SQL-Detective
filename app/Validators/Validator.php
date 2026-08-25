@@ -194,8 +194,8 @@ class Validator
     private function validateExists(string $field, mixed $value, array $params): bool
     {
         if ($value === null || $value === '') return true;
-        [$table, $column] = $params;
-        $column = $column ?? 'id';
+        $table = $params[0] ?? $field;
+        $column = $params[1] ?? 'id';
         $db = \App\Core\Application::getInstance()->db();
         $sql = "SELECT COUNT(*) FROM $table WHERE $column = ?";
         $stmt = $db->prepare($sql);

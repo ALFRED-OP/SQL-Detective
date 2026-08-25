@@ -39,7 +39,7 @@ class CaseController extends Controller
         $whereSql = implode(' AND ', $where);
 
         if ($status === 'completed') {
-            $cases = $db->prepare("
+            $stmt = $db->prepare("
                 SELECT c.*, ucp.progress_percentage, ucp.completed, ucp.completed_at, ucp.xp_earned,
                        COUNT(DISTINCT ch.id) as challenge_count
                 FROM cases c
@@ -48,9 +48,11 @@ class CaseController extends Controller
                 WHERE $whereSql AND ucp.completed = 1
                 GROUP BY c.id
                 ORDER BY ucp.completed_at DESC
-            ")->execute(array_merge([$userId], $params))->fetchAll();
+            ");
+            $stmt->execute(array_merge([$userId], $params));
+            $cases = $stmt->fetchAll();
         } elseif ($status === 'in_progress') {
-            $cases = $db->prepare("
+            $stmt = $db->prepare("
                 SELECT c.*, ucp.progress_percentage, ucp.completed, ucp.completed_at, ucp.xp_earned,
                        COUNT(DISTINCT ch.id) as challenge_count
                 FROM cases c
@@ -59,9 +61,11 @@ class CaseController extends Controller
                 WHERE $whereSql AND ucp.completed = 0 AND ucp.id IS NOT NULL
                 GROUP BY c.id
                 ORDER BY ucp.updated_at DESC
-            ")->execute(array_merge([$userId], $params))->fetchAll();
+            ");
+            $stmt->execute(array_merge([$userId], $params));
+            $cases = $stmt->fetchAll();
         } else {
-            $cases = $db->prepare("
+            $stmt = $db->prepare("
                 SELECT c.*, ucp.progress_percentage, ucp.completed, ucp.completed_at, ucp.xp_earned,
                        COUNT(DISTINCT ch.id) as challenge_count
                 FROM cases c
@@ -70,10 +74,12 @@ class CaseController extends Controller
                 WHERE $whereSql
                 GROUP BY c.id
                 ORDER BY c.difficulty ASC, c.id ASC
-            ")->execute(array_merge([$userId], $params))->fetchAll();
+            ");
+            $stmt->execute(array_merge([$userId], $params));
+            $cases = $stmt->fetchAll();
         }
 
-        $categories = $db->query("SELECT DISTINCT category FROM cases WHERE status = 'active' ORDER BY category")->fetchAll(PDO::FETCH_COLUMN);
+        $categories = $db->query("SELECT DISTINCT category FROM cases WHERE status = 'active' ORDER BY category")->fetchAll(\PDO::FETCH_COLUMN);
 
         return $this->view('cases.index', [
             'cases' => $cases,
@@ -88,26 +94,38 @@ class CaseController extends Controller
         $db = Application::getInstance()->db();
         $userId = $this->user();
 
-        $case = $db->prepare("
+        $stmt = $db->prepare("
             SELECT c.*, COUNT(DISTINCT ch.id) as challenge_count
             FROM cases c
             LEFT JOIN challenges ch ON ch.case_id = c.id
             WHERE c.id = ? AND c.status = 'active'
             GROUP BY c.id
-        ")->execute([$caseId])->fetch();
+        ");
+        $stmt->execute([$caseId]);
+        $case = $stmt->fetch();
 
         if (!$case) {
             $this->abort(404);
         }
 
-        $progress = $db->prepare("
+        $stmt = $db->prepare("
             SELECT * FROM user_case_progress
             WHERE user_id = ? AND case_id = ?
-        ")->execute([$userId, $caseId])->fetch();
+        ");
+        $stmt->execute([$userId, $caseId]);
+        $progress = $stmt->fetch();
 
-        $suspects = $db->prepare("SELECT * FROM suspects WHERE case_id = ? ORDER BY id")->execute([$caseId])->fetchAll();
-        $evidence = $db->prepare("SELECT * FROM evidence WHERE case_id = ? ORDER BY importance DESC, id")->execute([$caseId])->fetchAll();
-        $challenges = $db->prepare("SELECT * FROM challenges WHERE case_id = ? ORDER BY display_order")->execute([$caseId])->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM suspects WHERE case_id = ? ORDER BY id");
+        $stmt->execute([$caseId]);
+        $suspects = $stmt->fetchAll();
+
+        $stmt = $db->prepare("SELECT * FROM evidence WHERE case_id = ? ORDER BY importance DESC, id");
+        $stmt->execute([$caseId]);
+        $evidence = $stmt->fetchAll();
+
+        $stmt = $db->prepare("SELECT * FROM challenges WHERE case_id = ? ORDER BY display_order");
+        $stmt->execute([$caseId]);
+        $challenges = $stmt->fetchAll();
 
         return $this->view('cases.show', [
             'case' => $case,
@@ -123,10 +141,14 @@ class CaseController extends Controller
         $caseId = (int)$vars['case'];
         $db = Application::getInstance()->db();
 
-        $case = $db->prepare("SELECT * FROM cases WHERE id = ?")->execute([$caseId])->fetch();
+        $stmt = $db->prepare("SELECT * FROM cases WHERE id = ?");
+        $stmt->execute([$caseId]);
+        $case = $stmt->fetch();
         if (!$case) $this->abort(404);
 
-        $evidence = $db->prepare("SELECT * FROM evidence WHERE case_id = ? ORDER BY importance DESC, id")->execute([$caseId])->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM evidence WHERE case_id = ? ORDER BY importance DESC, id");
+        $stmt->execute([$caseId]);
+        $evidence = $stmt->fetchAll();
 
         return $this->view('cases.evidence', [
             'case' => $case,
@@ -139,10 +161,14 @@ class CaseController extends Controller
         $caseId = (int)$vars['case'];
         $db = Application::getInstance()->db();
 
-        $case = $db->prepare("SELECT * FROM cases WHERE id = ?")->execute([$caseId])->fetch();
+        $stmt = $db->prepare("SELECT * FROM cases WHERE id = ?");
+        $stmt->execute([$caseId]);
+        $case = $stmt->fetch();
         if (!$case) $this->abort(404);
 
-        $suspects = $db->prepare("SELECT * FROM suspects WHERE case_id = ? ORDER BY id")->execute([$caseId])->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM suspects WHERE case_id = ? ORDER BY id");
+        $stmt->execute([$caseId]);
+        $suspects = $stmt->fetchAll();
 
         return $this->view('cases.suspects', [
             'case' => $case,
@@ -155,7 +181,9 @@ class CaseController extends Controller
         $caseId = (int)$vars['case'];
         $db = Application::getInstance()->db();
 
-        $case = $db->prepare("SELECT * FROM cases WHERE id = ?")->execute([$caseId])->fetch();
+        $stmt = $db->prepare("SELECT * FROM cases WHERE id = ?");
+        $stmt->execute([$caseId]);
+        $case = $stmt->fetch();
         if (!$case) $this->abort(404);
 
         return $this->view('cases.briefing', ['case' => $case]);
@@ -167,10 +195,12 @@ class CaseController extends Controller
         $userId = $this->user();
         $db = Application::getInstance()->db();
 
-        $progress = $db->prepare("
+        $stmt = $db->prepare("
             SELECT * FROM user_case_progress
             WHERE user_id = ? AND case_id = ?
-        ")->execute([$userId, $caseId])->fetch();
+        ");
+        $stmt->execute([$userId, $caseId]);
+        $progress = $stmt->fetch();
 
         return $this->json(['progress' => $progress]);
     }

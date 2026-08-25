@@ -11,11 +11,16 @@ class View
     public function __construct()
     {
         $this->viewsPath = base_path('views/');
+        $message = get_flash('message');
+        $error = get_flash('error');
+        $flash = [];
+        if ($message) $flash['message'] = $message;
+        if ($error) $flash['error'] = $error;
         $this->share([
             'appName' => config('app.name'),
             'csrf_token' => csrf_token(),
             'auth' => auth_user(),
-            'flash' => get_flash('message') ?? get_flash('error'),
+            'flash' => $flash,
         ]);
     }
 

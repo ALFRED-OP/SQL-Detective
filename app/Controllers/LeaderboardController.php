@@ -27,11 +27,13 @@ class LeaderboardController extends Controller
 
         $userRank = null;
         if ($this->user()) {
-            $userRank = $db->prepare("
+            $stmt = $db->prepare("
                 SELECT COUNT(*) + 1 as rank
                 FROM users
                 WHERE xp > (SELECT xp FROM users WHERE id = ?) AND status = 'active'
-            ")->execute([$this->user()])->fetchColumn();
+            ");
+            $stmt->execute([$this->user()]);
+            $userRank = $stmt->fetchColumn();
         }
 
         return $this->view('leaderboard.index', [
@@ -47,7 +49,7 @@ class LeaderboardController extends Controller
         $perPage = min(50, max(1, (int)($_GET['per_page'] ?? 20)));
         $offset = ($page - 1) * $perPage;
 
-        $leaders = $db->prepare("
+        $stmt = $db->prepare("
             SELECT u.id, u.username, u.display_name, u.xp, u.level, u.detective_rank,
                    COUNT(DISTINCT ucp.case_id) as cases_completed,
                    COUNT(DISTINCT ua.achievement_id) as achievements_unlocked
@@ -58,7 +60,9 @@ class LeaderboardController extends Controller
             GROUP BY u.id
             ORDER BY u.xp DESC
             LIMIT ? OFFSET ?
-        ")->execute([$perPage, $offset])->fetchAll();
+        ");
+        $stmt->execute([$perPage, $offset]);
+        $leaders = $stmt->fetchAll();
 
         $total = $db->query("SELECT COUNT(*) FROM users WHERE status = 'active'")->fetchColumn();
 

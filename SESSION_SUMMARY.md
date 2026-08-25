@@ -75,13 +75,18 @@ Build a complete "SQL Detective" web application — an interactive database inv
 - `docs/API.md` — API reference
 - `SESSION_SUMMARY.md` — cross-session continuity
 
-### Bug Fixes (COMPLETED THIS SESSION)
+### Bug Fixes (COMPLETED ACROSS SESSIONS)
 - **CRITICAL**: Fixed namespace mismatches — `Application.php`, `Router.php`, `View.php` changed from `namespace App` to `namespace App\Core`
 - **CRITICAL**: Fixed all references in `functions.php`, `Controller.php`, `routes/web.php` to use `App\Core\*`
 - **CRITICAL**: Router — added `middleware()` method, route methods return `self` instead of `void`, pending middleware support
 - **CRITICAL**: Migration — class name resolution reads class from file via regex
 - **CRITICAL**: Middleware colon-parsing — `runMiddleware` splits on `:` for params like `ratelimit:login`
-- **CRITICAL**: CSRF applied globally — Router `dispatch()` auto-adds CSRF to non-GET, excludes `/api/query` and `/api/challenge/submit`
+- **CRITICAL**: CSRF applied globally — Router `dispatch()` auto-adds CSRF to non-GET, excludes `/api/query/execute` and `/api/challenges/{id}/submit`
+- **CRITICAL**: Fixed Router duplicate property declarations (`currentRouteName`, `currentPrefix`, `currentMiddleware` were declared twice — PHP 8.1+ fatal error)
+- **CRITICAL**: Fixed CSRF exclusion paths — was `/api/query` + `/api/challenge/submit` (wrong), now `/api/query/execute` + prefix-match for `/api/challenges/*/submit`
+- **CRITICAL**: Fixed View flash message delivery — constructor consumed flash from `$_SESSION` before layout could display it; now passes structured array with both `message` and `error` keys
+- **CRITICAL**: Fixed layout flash display — was calling `has_flash()`/`get_flash()` on already-consumed `$_SESSION`; now uses `$flash` variable from View
+- **HIGH**: Fixed prepare()->execute()->fetch() chaining across ALL controllers — every instance split into `$stmt->execute(); $result = $stmt->fetch*();`
 - Fixed `route()` helper token replacement (`{key}` syntax)
 - Fixed `Application::handleException` HttpException reference
 - Fixed `CsrfMiddleware` — `$param` signature, view-based 419 error
@@ -90,15 +95,20 @@ Build a complete "SQL Detective" web application — an interactive database inv
 - Fixed `AuthMiddleware` / `GuestMiddleware` — `$param` signature added
 - Fixed `Controller::validate()` — catches `ValidationException`, redirects back with flash errors
 - Fixed `Validator::validateUnique()` — accepts optional except-ID for edit operations
+- Fixed `Validator::validateExists()` — variable shadowing with `$params` destructuring
 - Fixed `ChallengeValidator` — removed broken `expected_result_hash` logic (uses `validation_rules` only), fixed XP double-award, fixed prepare->execute->fetch chains
 - Fixed `DatabaseSeeder` — column names (`hint_level` not `hint_number`, `xp_penalty` not `xp_cost`, challenges uses `display_order`/`validation_rules` only)
+- Fixed `DatabaseSeeder` — challenge difficulty ENUM values (`easy`/`medium`/`hard` → `beginner`/`intermediate`/`advanced`)
 - Fixed `DetectiveController` — SQL operator precedence (parentheses around OR clause), prepare->execute->fetch chains throughout
+- Fixed `ApiController` — `submitChallenge` XP double-award (guards with `> 0` check)
 - Created missing auth views: `verify-email.php`, `forgot-password.php`, `reset-password.php`
 - Created storage subdirectories with `.gitkeep` files
+- Fixed `config/security.php` — session save path corrected from `storage/framework/sessions` to `storage/sessions`
+- Fixed `.gitignore` — session path updated; added exception for investigation DB `.sql` files under `*.sql` rule
 
 ## What's Done (Final Status)
 
-All core features are complete with critical bug fixes applied:
+All core features are complete with all critical bugs fixed:
 - 100+ files across MVC structure
 - 34 views (including 3 new auth views)
 - 30 investigation cases defined with challenges and hints
@@ -110,24 +120,29 @@ All core features are complete with critical bug fixes applied:
 - Apache .htaccess with security and caching
 - Storage directories: cache, logs, sessions
 
-### Critical Bugs Fixed
+### Bugs Fixed (Cumulative)
 - Namespace mismatches (App vs App\Core) in core classes
 - Router missing middleware() method and return-self
+- Router duplicate property declarations (fatal error)
 - Migration class name resolution
-- CSRF not applied globally
+- CSRF not applied globally, wrong exclusion paths
+- CSRF exclusion paths wrong (`/api/query` → `/api/query/execute`, `/api/challenge/submit` → prefix match)
 - Middleware $param signatures
-- Controller validate() not catching ValidationException
+- Controller validate() not catching ValidationException, wrong function names (set_flash/redirect_back/return_json → flash/back/json_response)
 - ChallengeValidator expected_result_hash vs rules logic
 - ChallengeValidator XP double-award bug
 - SQL operator precedence in DetectiveController (OR without parentheses)
-- DatabaseSeeder column name mismatches
-- prepare()->execute()->fetch() chaining (partially — DetectiveController fixed, ~59 remaining in other controllers)
+- DatabaseSeeder column name mismatches and ENUM value mismatches
+- prepare()->execute()->fetch() chaining across ALL 10 controllers and ChallengeValidator
+- View flash delivery: constructor consumed flash before layout; layout used function calls on empty session
+- Validator validateExists() variable shadowing
+- Session save path mismatch (config vs .gitignore vs actual directories)
+- .gitignore blocking investigation DB .sql files
 
 ### Known Remaining Issues
-1. **prepare()->execute()->fetch() chaining** — ~59 instances across ApiController, DashboardController, CaseController, ProfileController, AdminController, LeaderboardController, AchievementController. `PDOStatement::execute()` returns `bool`, not `$this`, so `->fetch()` on the result will fail at runtime. DetectiveController and ChallengeValidator are fixed; all other controllers need the same treatment.
-2. Investigation databases for cases 004-030 (27 more DB schemas/data files)
-3. Suspect and evidence records for each case in the main DB
-4. Final PHP syntax verification (not possible without PHP on this Windows dev environment)
+1. Investigation databases for cases 004-030 (27 more DB schemas/data files)
+2. Suspect and evidence records for each case in the main DB
+3. Final PHP syntax verification (not possible without PHP on this Windows dev environment)
 
 ## Key File Paths
 - Project root: `D:\personal\A LVL PMM Project\SQL-Detective\SQL-Detective\`

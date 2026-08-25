@@ -14,7 +14,9 @@ class ProfileController extends Controller
         $userId = $this->user();
         $db = Application::getInstance()->db();
 
-        $user = $db->prepare("SELECT * FROM users WHERE id = ?")->execute([$userId])->fetch();
+        $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
 
         $xpForNextLevel = $this->xpForLevel($user['level'] + 1);
         $xpForCurrentLevel = $this->xpForLevel($user['level']);
@@ -22,7 +24,7 @@ class ProfileController extends Controller
         $requiredXp = $xpForNextLevel - $xpForCurrentLevel;
         $progressPercent = $requiredXp > 0 ? min(100, ($progressXp / $requiredXp) * 100) : 100;
 
-        $caseStats = $db->prepare("
+        $stmt = $db->prepare("
             SELECT
                 COUNT(*) as total_cases,
                 SUM(CASE WHEN completed THEN 1 ELSE 0 END) as completed_cases,
@@ -31,33 +33,41 @@ class ProfileController extends Controller
                 SUM(hints_used) as total_hints_used
             FROM user_case_progress
             WHERE user_id = ?
-        ")->execute([$userId])->fetch();
+        ");
+        $stmt->execute([$userId]);
+        $caseStats = $stmt->fetch();
 
-        $challengeStats = $db->prepare("
+        $stmt = $db->prepare("
             SELECT
                 COUNT(DISTINCT challenge_id) as challenges_solved,
                 COUNT(*) as total_attempts,
                 SUM(CASE WHEN result_status = 'success' THEN 1 ELSE 0 END) as successful_attempts
             FROM challenge_attempts
             WHERE user_id = ?
-        ")->execute([$userId])->fetch();
+        ");
+        $stmt->execute([$userId]);
+        $challengeStats = $stmt->fetch();
 
-        $recentCases = $db->prepare("
+        $stmt = $db->prepare("
             SELECT c.*, ucp.progress_percentage, ucp.completed, ucp.completed_at, ucp.xp_earned
             FROM user_case_progress ucp
             JOIN cases c ON c.id = ucp.case_id
             WHERE ucp.user_id = ?
             ORDER BY ucp.updated_at DESC
             LIMIT 10
-        ")->execute([$userId])->fetchAll();
+        ");
+        $stmt->execute([$userId]);
+        $recentCases = $stmt->fetchAll();
 
-        $achievements = $db->prepare("
+        $stmt = $db->prepare("
             SELECT a.*, ua.unlocked_at,
                    CASE WHEN ua.id IS NOT NULL THEN 1 ELSE 0 END as unlocked
             FROM achievements a
             LEFT JOIN user_achievements ua ON ua.achievement_id = a.id AND ua.user_id = ?
             ORDER BY a.requirement_type, a.requirement_value
-        ")->execute([$userId])->fetchAll();
+        ");
+        $stmt->execute([$userId]);
+        $achievements = $stmt->fetchAll();
 
         $streak = $this->calculateStreak($userId);
 
@@ -102,7 +112,9 @@ class ProfileController extends Controller
         ]);
 
         $db = Application::getInstance()->db();
-        $user = $db->prepare("SELECT password_hash FROM users WHERE id = ?")->execute([$userId])->fetch();
+        $stmt = $db->prepare("SELECT password_hash FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
 
         if (!verify_password($validated['current_password'], $user['password_hash'])) {
             return $this->json(['success' => false, 'message' => 'Current password is incorrect'], 400);
@@ -118,15 +130,19 @@ class ProfileController extends Controller
         $userId = $this->user();
         $db = Application::getInstance()->db();
 
-        $achievements = $db->prepare("
+        $stmt = $db->prepare("
             SELECT a.*, ua.unlocked_at,
                    CASE WHEN ua.id IS NOT NULL THEN 1 ELSE 0 END as unlocked
             FROM achievements a
             LEFT JOIN user_achievements ua ON ua.achievement_id = a.id AND ua.user_id = ?
             ORDER BY a.requirement_type, a.requirement_value
-        ")->execute([$userId])->fetchAll();
+        ");
+        $stmt->execute([$userId]);
+        $achievements = $stmt->fetchAll();
 
-        $unlockedCount = $db->prepare("SELECT COUNT(*) FROM user_achievements WHERE user_id = ?")->execute([$userId])->fetchColumn();
+        $stmt = $db->prepare("SELECT COUNT(*) FROM user_achievements WHERE user_id = ?");
+        $stmt->execute([$userId]);
+        $unlockedCount = $stmt->fetchColumn();
         $totalCount = count($achievements);
 
         return $this->view('profile.achievements', [
@@ -150,7 +166,9 @@ class ProfileController extends Controller
     private function calculateStreak(int $userId): int
     {
         $db = Application::getInstance()->db();
-        $dates = $db->prepare("SELECT DATE(completed_at) as date FROM user_case_progress WHERE user_id = ? AND completed = 1 ORDER BY completed_at DESC")->execute([$userId])->fetchAll(PDO::FETCH_COLUMN);
+        $stmt = $db->prepare("SELECT DATE(completed_at) as date FROM user_case_progress WHERE user_id = ? AND completed = 1 ORDER BY completed_at DESC");
+        $stmt->execute([$userId]);
+        $dates = $stmt->fetchAll(\PDO::FETCH_COLUMN);
         if (empty($dates)) return 0;
 
         $streak = 0;

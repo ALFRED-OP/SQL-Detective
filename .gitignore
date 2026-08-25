@@ -27,8 +27,8 @@ storage/cache/*
 !storage/cache/.gitkeep
 
 # Sessions
-storage/framework/sessions/*
-!storage/framework/sessions/.gitkeep
+storage/sessions/*
+!storage/sessions/.gitkeep
 
 # Uploads
 public/uploads/*
@@ -49,6 +49,7 @@ composer.phar
 *.bak
 *.backup
 *.sql
+!database/investigation_databases/**/*.sql
 
 # Documentation build
 docs/_build/
