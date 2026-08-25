@@ -18,7 +18,7 @@ abstract class Controller
 
     protected function view(string $name, array $data = []): HtmlResponse
     {
-        $view = new \App\View();
+        $view = new \App\Core\View();
         $content = $view->render($name, $data);
         return new HtmlResponse($content);
     }
@@ -42,7 +42,7 @@ abstract class Controller
     protected function abort(int $code, string $message = ''): void
     {
         http_response_code($code);
-        $view = new \App\View();
+        $view = new \App\Core\View();
         echo $view->render("errors/$code", ['message' => $message]);
         exit;
     }

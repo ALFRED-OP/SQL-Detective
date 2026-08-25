@@ -1,6 +1,6 @@
 <?php
 
-use App\Router;
+use App\Core\Router;
 
 $router = Router::getInstance();
 

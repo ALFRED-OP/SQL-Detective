@@ -49,7 +49,7 @@ function base_path(string $path = ''): string
 
 function view(string $name, array $data = []): void
 {
-    $view = new \App\View();
+    $view = new \App\Core\View();
     echo $view->render($name, $data);
 }
 
@@ -183,7 +183,7 @@ function guest(): bool
 
 function route(string $name, array $params = []): string
 {
-    $router = \App\Router::getInstance();
+    $router = \App\Core\Router::getInstance();
     return $router->url($name, $params);
 }
 
