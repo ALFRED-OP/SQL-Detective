@@ -27,21 +27,29 @@ class DetectiveController extends Controller
         $db = Application::getInstance()->db();
         $userId = $this->user();
 
-        $case = $db->prepare("SELECT * FROM cases WHERE id = ? AND status = 'active'")->execute([$caseId])->fetch();
+        $stmt = $db->prepare("SELECT * FROM cases WHERE id = ? AND status = 'active'");
+        $stmt->execute([$caseId]);
+        $case = $stmt->fetch();
         if (!$case) $this->abort(404);
 
-        $databases = $db->prepare("SELECT * FROM case_databases WHERE case_id = ?")->execute([$caseId])->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM case_databases WHERE case_id = ?");
+        $stmt->execute([$caseId]);
+        $databases = $stmt->fetchAll();
         $databaseId = $databases[0]['id'] ?? null;
 
         $tables = [];
         $relationships = [];
         if ($databaseId) {
-            $tables = $db->prepare("SELECT * FROM database_tables WHERE case_database_id = ? ORDER BY display_order")->execute([$databaseId])->fetchAll();
+            $stmt = $db->prepare("SELECT * FROM database_tables WHERE case_database_id = ? ORDER BY display_order");
+            $stmt->execute([$databaseId]);
+            $tables = $stmt->fetchAll();
             foreach ($tables as &$table) {
-                $table['columns'] = $db->prepare("SELECT * FROM database_columns WHERE table_id = ? ORDER BY display_order")->execute([$table['id']])->fetchAll();
+                $stmt = $db->prepare("SELECT * FROM database_columns WHERE table_id = ? ORDER BY display_order");
+                $stmt->execute([$table['id']]);
+                $table['columns'] = $stmt->fetchAll();
             }
 
-            $relationships = $db->prepare("
+            $stmt = $db->prepare("
                 SELECT
                     dt1.table_name as from_table,
                     dc1.column_name as from_column,
@@ -51,12 +59,16 @@ class DetectiveController extends Controller
                 JOIN database_tables dt1 ON dt1.id = dc1.table_id
                 JOIN database_columns dc2 ON dc2.column_name = dc1.column_name AND dc2.table_id != dc1.table_id
                 JOIN database_tables dt2 ON dt2.id = dc2.table_id
-                WHERE dc1.is_primary_key = 1 OR dc2.is_primary_key = 1
+                WHERE (dc1.is_primary_key = 1 OR dc2.is_primary_key = 1)
                 AND dt1.case_database_id = ? AND dt2.case_database_id = ?
-            ")->execute([$databaseId, $databaseId])->fetchAll();
+            ");
+            $stmt->execute([$databaseId, $databaseId]);
+            $relationships = $stmt->fetchAll();
         }
 
-        $progress = $db->prepare("SELECT * FROM user_case_progress WHERE user_id = ? AND case_id = ?")->execute([$userId, $caseId])->fetch();
+        $stmt = $db->prepare("SELECT * FROM user_case_progress WHERE user_id = ? AND case_id = ?");
+        $stmt->execute([$userId, $caseId]);
+        $progress = $stmt->fetch();
         if (!$progress) {
             $db->prepare("INSERT INTO user_case_progress (user_id, case_id, current_challenge_id, progress_percentage) VALUES (?, ?, NULL, 0)")
                 ->execute([$userId, $caseId]);
@@ -65,19 +77,27 @@ class DetectiveController extends Controller
 
         $currentChallenge = null;
         if ($progress['current_challenge_id']) {
-            $currentChallenge = $db->prepare("SELECT * FROM challenges WHERE id = ?")->execute([$progress['current_challenge_id']])->fetch();
+            $stmt = $db->prepare("SELECT * FROM challenges WHERE id = ?");
+            $stmt->execute([$progress['current_challenge_id']]);
+            $currentChallenge = $stmt->fetch();
         } else {
-            $currentChallenge = $db->prepare("SELECT * FROM challenges WHERE case_id = ? ORDER BY display_order LIMIT 1")->execute([$caseId])->fetch();
+            $stmt = $db->prepare("SELECT * FROM challenges WHERE case_id = ? ORDER BY display_order LIMIT 1");
+            $stmt->execute([$caseId]);
+            $currentChallenge = $stmt->fetch();
         }
 
-        $challenges = $db->prepare("SELECT * FROM challenges WHERE case_id = ? ORDER BY display_order")->execute([$caseId])->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM challenges WHERE case_id = ? ORDER BY display_order");
+        $stmt->execute([$caseId]);
+        $challenges = $stmt->fetchAll();
 
-        $queryHistory = $db->prepare("
+        $stmt = $db->prepare("
             SELECT * FROM query_history
             WHERE user_id = ? AND case_id = ?
             ORDER BY created_at DESC
             LIMIT 20
-        ")->execute([$userId, $caseId])->fetchAll();
+        ");
+        $stmt->execute([$userId, $caseId]);
+        $queryHistory = $stmt->fetchAll();
 
         return $this->view('detective.workspace', [
             'case' => $case,
@@ -96,19 +116,25 @@ class DetectiveController extends Controller
         $caseId = (int)$vars['case'];
         $db = Application::getInstance()->db();
 
-        $databases = $db->prepare("SELECT * FROM case_databases WHERE case_id = ?")->execute([$caseId])->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM case_databases WHERE case_id = ?");
+        $stmt->execute([$caseId]);
+        $databases = $stmt->fetchAll();
         $databaseId = $databases[0]['id'] ?? null;
 
         if (!$databaseId) {
             return $this->json(['tables' => [], 'relationships' => []]);
         }
 
-        $tables = $db->prepare("SELECT * FROM database_tables WHERE case_database_id = ? ORDER BY display_order")->execute([$databaseId])->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM database_tables WHERE case_database_id = ? ORDER BY display_order");
+        $stmt->execute([$databaseId]);
+        $tables = $stmt->fetchAll();
         foreach ($tables as &$table) {
-            $table['columns'] = $db->prepare("SELECT * FROM database_columns WHERE table_id = ? ORDER BY display_order")->execute([$table['id']])->fetchAll();
+            $stmt = $db->prepare("SELECT * FROM database_columns WHERE table_id = ? ORDER BY display_order");
+            $stmt->execute([$table['id']]);
+            $table['columns'] = $stmt->fetchAll();
         }
 
-        $relationships = $db->prepare("
+        $stmt = $db->prepare("
             SELECT
                 dt1.table_name as from_table,
                 dc1.column_name as from_column,
@@ -118,9 +144,11 @@ class DetectiveController extends Controller
             JOIN database_tables dt1 ON dt1.id = dc1.table_id
             JOIN database_columns dc2 ON dc2.column_name = dc1.column_name AND dc2.table_id != dc1.table_id
             JOIN database_tables dt2 ON dt2.id = dc2.table_id
-            WHERE dc1.is_primary_key = 1 OR dc2.is_primary_key = 1
+            WHERE (dc1.is_primary_key = 1 OR dc2.is_primary_key = 1)
             AND dt1.case_database_id = ? AND dt2.case_database_id = ?
-        ")->execute([$databaseId, $databaseId])->fetchAll();
+        ");
+        $stmt->execute([$databaseId, $databaseId]);
+        $relationships = $stmt->fetchAll();
 
         return $this->json(['tables' => $tables, 'relationships' => $relationships]);
     }
