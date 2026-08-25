@@ -358,9 +358,11 @@ class DetectiveController extends Controller
     private function checkAchievements(int $userId): void
     {
         $db = Application::getInstance()->db();
-        $user = $db->prepare("SELECT * FROM users WHERE id = ?")->execute([$userId])->fetch();
+        $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
 
-        $stats = $db->prepare("
+        $stmt = $db->prepare("
             SELECT
                 COUNT(DISTINCT ucp.case_id) as cases_completed,
                 COUNT(DISTINCT ca.challenge_id) as challenges_solved,
@@ -373,11 +375,15 @@ class DetectiveController extends Controller
             LEFT JOIN challenge_attempts ca ON ca.user_id = u.id AND ca.result_status = 'success'
             LEFT JOIN user_achievements ua ON ua.user_id = u.id
             WHERE u.id = ?
-        ")->execute([$userId])->fetch();
+        ");
+        $stmt->execute([$userId]);
+        $stats = $stmt->fetch();
 
         $streak = $this->calculateStreak($userId);
 
-        $achievements = $db->prepare("SELECT * FROM achievements WHERE id NOT IN (SELECT achievement_id FROM user_achievements WHERE user_id = ?)")->execute([$userId])->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM achievements WHERE id NOT IN (SELECT achievement_id FROM user_achievements WHERE user_id = ?)");
+        $stmt->execute([$userId]);
+        $achievements = $stmt->fetchAll();
 
         foreach ($achievements as $achievement) {
             $unlocked = false;
@@ -426,7 +432,9 @@ class DetectiveController extends Controller
     private function calculateStreak(int $userId): int
     {
         $db = Application::getInstance()->db();
-        $dates = $db->prepare("SELECT DATE(completed_at) as date FROM user_case_progress WHERE user_id = ? AND completed = 1 ORDER BY completed_at DESC")->execute([$userId])->fetchAll(PDO::FETCH_COLUMN);
+        $stmt = $db->prepare("SELECT DATE(completed_at) as date FROM user_case_progress WHERE user_id = ? AND completed = 1 ORDER BY completed_at DESC");
+        $stmt->execute([$userId]);
+        $dates = $stmt->fetchAll(\PDO::FETCH_COLUMN);
         if (empty($dates)) return 0;
 
         $streak = 0;
