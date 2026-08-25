@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="SQL Detective - Investigate. Query. Discover the Truth.">
+    <meta name="csrf-token" value="<?= csrf_token() ?>">
     <title><?= e($title ?? 'SQL Detective') ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
