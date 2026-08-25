@@ -171,12 +171,16 @@ class DetectiveController extends Controller
         }
 
         $db = Application::getInstance()->db();
-        $case = $db->prepare("SELECT * FROM cases WHERE id = ?")->execute([$caseId])->fetch();
+        $stmt = $db->prepare("SELECT * FROM cases WHERE id = ?");
+        $stmt->execute([$caseId]);
+        $case = $stmt->fetch();
         if (!$case) {
             return $this->json(['success' => false, 'message' => 'Case not found'], 404);
         }
 
-        $databases = $db->prepare("SELECT * FROM case_databases WHERE case_id = ?")->execute([$caseId])->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM case_databases WHERE case_id = ?");
+        $stmt->execute([$caseId]);
+        $databases = $stmt->fetchAll();
         $databaseId = $databases[0]['id'] ?? null;
 
         if (!$databaseId) {
@@ -221,12 +225,14 @@ class DetectiveController extends Controller
         $userId = $this->user();
         $db = Application::getInstance()->db();
 
-        $history = $db->prepare("
+        $stmt = $db->prepare("
             SELECT * FROM query_history
             WHERE user_id = ? AND case_id = ?
             ORDER BY created_at DESC
             LIMIT 50
-        ")->execute([$userId, $caseId])->fetchAll();
+        ");
+        $stmt->execute([$userId, $caseId]);
+        $history = $stmt->fetchAll();
 
         return $this->json(['history' => $history]);
     }
@@ -249,7 +255,7 @@ class DetectiveController extends Controller
 
         $result = $this->challengeValidator->validate($userId, $challengeId, $query);
 
-        if ($result['success']) {
+        if ($result['success'] && ($result['xp_earned'] ?? 0) > 0) {
             $this->awardXP($userId, $result['xp_earned']);
             $this->checkAchievements($userId);
         }
@@ -263,12 +269,16 @@ class DetectiveController extends Controller
         $hintId = (int)$vars['hint'];
         $db = Application::getInstance()->db();
 
-        $hint = $db->prepare("SELECT * FROM hints WHERE id = ?")->execute([$hintId])->fetch();
+        $stmt = $db->prepare("SELECT * FROM hints WHERE id = ?");
+        $stmt->execute([$hintId]);
+        $hint = $stmt->fetch();
         if (!$hint) {
             return $this->json(['success' => false, 'message' => 'Hint not found'], 404);
         }
 
-        $existing = $db->prepare("SELECT * FROM hint_usage WHERE user_id = ? AND hint_id = ?")->execute([$userId, $hintId])->fetch();
+        $stmt = $db->prepare("SELECT * FROM hint_usage WHERE user_id = ? AND hint_id = ?");
+        $stmt->execute([$userId, $hintId]);
+        $existing = $stmt->fetch();
         if ($existing) {
             return $this->json(['success' => true, 'hint' => $hint, 'already_used' => true]);
         }
@@ -313,7 +323,9 @@ class DetectiveController extends Controller
     private function updateLevel(int $userId): void
     {
         $db = Application::getInstance()->db();
-        $user = $db->prepare("SELECT xp, level FROM users WHERE id = ?")->execute([$userId])->fetch();
+        $stmt = $db->prepare("SELECT xp, level FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
 
         $newLevel = $this->calculateLevel($user['xp']);
         if ($newLevel > $user['level']) {
