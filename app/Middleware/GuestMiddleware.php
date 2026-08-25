@@ -7,7 +7,7 @@ use Laminas\Diactoros\Response\RedirectResponse;
 
 class GuestMiddleware
 {
-    public function handle(ServerRequestInterface $request): bool
+    public function handle(ServerRequestInterface $request, ?string $param = null): bool
     {
         if (!empty($_SESSION['user'])) {
             if ($this->isAjax($request)) {

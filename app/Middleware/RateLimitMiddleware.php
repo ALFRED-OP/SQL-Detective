@@ -21,8 +21,15 @@ class RateLimitMiddleware
         $this->keyPrefix = "ratelimit:$limiter:";
     }
 
-    public function handle(ServerRequestInterface $request): bool
+    public function handle(ServerRequestInterface $request, ?string $param = null): bool
     {
+        if ($param) {
+            $this->limiter = $param;
+            $config = config("security.rate_limiting.$param", []);
+            $this->maxAttempts = $config['max_attempts'] ?? 60;
+            $this->decayMinutes = $config['decay_minutes'] ?? 1;
+            $this->keyPrefix = "ratelimit:$param:";
+        }
         $key = $this->getKey($request);
         $allowed = $this->checkLimit($key);
 
@@ -47,7 +54,8 @@ class RateLimitMiddleware
             http_response_code(429);
             header('Content-Type: text/html');
             header("Retry-After: $retryAfter");
-            echo '<html><body><h1>429 - Too Many Requests</h1><p>Please wait before trying again.</p></body></html>';
+            $view = new \App\Core\View();
+            echo $view->render('errors/429', ['message' => 'Too many requests. Please wait before trying again.']);
             exit;
         }
 

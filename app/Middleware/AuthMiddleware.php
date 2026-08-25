@@ -7,7 +7,7 @@ use Laminas\Diactoros\Response\RedirectResponse;
 
 class AuthMiddleware
 {
-    public function handle(ServerRequestInterface $request): bool
+    public function handle(ServerRequestInterface $request, ?string $param = null): bool
     {
         if (empty($_SESSION['user'])) {
             $_SESSION['_redirect_after_login'] = $request->getUri()->getPath();

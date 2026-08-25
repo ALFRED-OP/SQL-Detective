@@ -17,18 +17,23 @@ class ChallengeValidator
 
     public function validate(int $userId, int $challengeId, string $query): array
     {
-        $challenge = $this->db->prepare("SELECT * FROM challenges WHERE id = ?")->execute([$challengeId])->fetch();
+        $stmt = $this->db->prepare("SELECT * FROM challenges WHERE id = ?");
+        $stmt->execute([$challengeId]);
+        $challenge = $stmt->fetch();
         if (!$challenge) {
             return ['success' => false, 'message' => 'Challenge not found', 'xp_earned' => 0];
         }
 
-        $db = Application::getInstance()->db();
-        $case = $db->prepare("SELECT * FROM cases WHERE id = ?")->execute([$challenge['case_id']])->fetch();
+        $stmt = $this->db->prepare("SELECT * FROM cases WHERE id = ?");
+        $stmt->execute([$challenge['case_id']]);
+        $case = $stmt->fetch();
         if (!$case) {
             return ['success' => false, 'message' => 'Case not found', 'xp_earned' => 0];
         }
 
-        $databases = $db->prepare("SELECT * FROM case_databases WHERE case_id = ?")->execute([$case['id']])->fetchAll();
+        $stmt = $this->db->prepare("SELECT * FROM case_databases WHERE case_id = ?");
+        $stmt->execute([$case['id']]);
+        $databases = $stmt->fetchAll();
         $databaseId = $databases[0]['id'] ?? null;
 
         if (!$databaseId) {
@@ -49,15 +54,11 @@ class ChallengeValidator
         }
 
         $validationRules = json_decode($challenge['validation_rules'] ?? '{}', true);
-        $expectedResultHash = $challenge['expected_result_hash'];
 
         $isCorrect = false;
         $message = '';
 
-        if ($expectedResultHash) {
-            $userResultHash = $this->hashResult($userRows);
-            $isCorrect = hash_equals($expectedResultHash, $userResultHash);
-        } elseif (!empty($validationRules)) {
+        if (!empty($validationRules)) {
             $isCorrect = $this->validateAgainstRules($userRows, $validationRules);
         } else {
             $isCorrect = true;
@@ -234,14 +235,17 @@ class ChallengeValidator
         $this->db->prepare("UPDATE user_case_progress SET " . implode(', ', $sets) . " WHERE id = ?")->execute($params);
     }
 
-    private function completeCase(int $userId, int $caseId, int $xpReward): void
+    private function completeCase(int $userId, int $caseId, int $challengeXpReward): void
     {
-        $case = $this->db->prepare("SELECT xp_reward FROM cases WHERE id = ?")->execute([$caseId])->fetch();
-        $totalXp = ($case['xp_reward'] ?? 0) + $xpReward;
+        $stmt = $this->db->prepare("SELECT xp_reward FROM cases WHERE id = ?");
+        $stmt->execute([$caseId]);
+        $case = $stmt->fetch();
+        $caseXp = $case['xp_reward'] ?? 0;
 
-        $this->db->prepare("UPDATE user_case_progress SET xp_earned = ?, completed = 1, completed_at = NOW() WHERE user_id = ? AND case_id = ?")->execute([$totalXp, $userId, $caseId]);
+        $stmt = $this->db->prepare("UPDATE user_case_progress SET xp_earned = ?, completed = 1, completed_at = NOW() WHERE user_id = ? AND case_id = ?");
+        $stmt->execute([$caseXp, $userId, $caseId]);
 
-        $this->db->prepare("UPDATE users SET xp = xp + ? WHERE id = ?")->execute([$totalXp, $userId]);
+        $this->db->prepare("UPDATE users SET xp = xp + ? WHERE id = ?")->execute([$caseXp, $userId]);
         $this->updateUserLevel($userId);
     }
 
