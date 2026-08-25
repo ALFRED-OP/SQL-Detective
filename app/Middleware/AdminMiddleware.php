@@ -7,7 +7,7 @@ use Laminas\Diactoros\Response\RedirectResponse;
 
 class AdminMiddleware
 {
-    public function handle(ServerRequestInterface $request): bool
+    public function handle(ServerRequestInterface $request, ?string $param = null): bool
     {
         if (empty($_SESSION['user'])) {
             $_SESSION['_redirect_after_login'] = $request->getUri()->getPath();
@@ -18,8 +18,8 @@ class AdminMiddleware
 
         if (($_SESSION['user']['role'] ?? '') !== 'admin') {
             http_response_code(403);
-            header('Content-Type: text/html');
-            echo '<html><body><h1>403 - Forbidden</h1><p>Admin access required.</p></body></html>';
+            $view = new \App\Core\View();
+            echo $view->render('errors/403', ['message' => 'Admin access required.']);
             exit;
         }
 
