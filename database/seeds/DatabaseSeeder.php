@@ -528,8 +528,8 @@ class DatabaseSeeder
             $stmt->execute([$caseId, $ch[1]]);
             if ($stmt->fetchColumn() === 0) {
                 $this->db->prepare("
-                    INSERT INTO challenges (case_id, title, description, difficulty, xp_reward, validation_rules, expected_result_hash, sort_order, status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')
+                    INSERT INTO challenges (case_id, title, description, difficulty, xp_reward, validation_rules, display_order)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                 ")->execute([
                     $caseId,
                     $ch[1],
@@ -537,7 +537,6 @@ class DatabaseSeeder
                     $ch[3],
                     $ch[4],
                     $ch[6],
-                    $ch[5],
                     $ch[4] / 50,
                 ]);
                 echo "Challenge '{$ch[1]}' created for {$ch[0]}\n";
@@ -582,11 +581,11 @@ class DatabaseSeeder
             $challengeId = $challengeMap[$caseId . '|' . $h[1]] ?? null;
             if (!$challengeId) continue;
 
-            $stmt = $this->db->prepare("SELECT COUNT(*) FROM hints WHERE challenge_id = ? AND hint_number = ?");
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM hints WHERE challenge_id = ? AND hint_level = ?");
             $stmt->execute([$challengeId, $h[2]]);
             if ($stmt->fetchColumn() === 0) {
                 $this->db->prepare("
-                    INSERT INTO hints (challenge_id, hint_number, hint_text, xp_cost)
+                    INSERT INTO hints (challenge_id, hint_level, hint_text, xp_penalty)
                     VALUES (?, ?, ?, ?)
                 ")->execute([$challengeId, $h[2], $h[3], $h[4]]);
             }

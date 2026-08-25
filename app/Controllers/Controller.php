@@ -49,8 +49,17 @@ abstract class Controller
 
     protected function validate(array $data, array $rules, array $messages = []): array
     {
-        $validator = new \App\Validators\Validator($data, $rules, $messages);
-        return $validator->validate();
+        try {
+            $validator = new \App\Validators\Validator($data, $rules, $messages);
+            return $validator->validate();
+        } catch (\App\Validators\ValidationException $e) {
+            if (is_ajax()) {
+                return_json(['success' => false, 'errors' => $e->getErrors()]);
+            }
+            set_flash('error', $e->getMessage());
+            redirect_back();
+        }
+        return [];
     }
 
     protected function auth(): ?array

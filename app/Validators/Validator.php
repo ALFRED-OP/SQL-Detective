@@ -176,12 +176,18 @@ class Validator
     private function validateUnique(string $field, mixed $value, array $params): bool
     {
         if ($value === null || $value === '') return true;
-        [$table, $column] = $params;
-        $column = $column ?? $field;
+        $table = $params[0] ?? $field;
+        $column = $params[1] ?? $field;
+        $exceptId = $params[2] ?? null;
         $db = \App\Core\Application::getInstance()->db();
         $sql = "SELECT COUNT(*) FROM $table WHERE $column = ?";
+        $params = [$value];
+        if ($exceptId) {
+            $sql .= " AND id != ?";
+            $params[] = $exceptId;
+        }
         $stmt = $db->prepare($sql);
-        $stmt->execute([$value]);
+        $stmt->execute($params);
         return $stmt->fetchColumn() === 0;
     }
 
