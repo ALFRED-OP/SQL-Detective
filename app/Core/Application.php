@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Core;
 
 class Application
 {
@@ -113,7 +113,7 @@ class Application
             'trace' => $e->getTraceAsString(),
         ]);
 
-        $code = $e instanceof \HttpException ? $e->getCode() : 500;
+        $code = $e instanceof HttpException ? $e->getCode() : 500;
 
         if (is_ajax() || str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json')) {
             json_response([

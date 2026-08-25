@@ -1,11 +1,9 @@
 <?php
 
-namespace App;
+namespace App\Core;
 
 use FastRoute\RouteCollector;
 use FastRoute\Dispatcher;
-use FastRoute\RouteParser\Std;
-use FastRoute\DataGenerator\GroupCountBased;
 use Laminas\Diactoros\Response;
 use Laminas\Diactoros\ServerRequestFactory;
 
@@ -38,36 +36,53 @@ class Router
         }
     }
 
-    public function get(string $pattern, callable|array|string $handler, array $middleware = []): void
+    private string $currentRouteName = '';
+    private string $currentPrefix = '';
+    private array $currentMiddleware = [];
+    private array $pendingMiddleware = [];
+
+    public function get(string $pattern, callable|array|string $handler, array $middleware = []): self
     {
         $this->addRoute('GET', $pattern, $handler, $middleware);
+        return $this;
     }
 
-    public function post(string $pattern, callable|array|string $handler, array $middleware = []): void
+    public function post(string $pattern, callable|array|string $handler, array $middleware = []): self
     {
         $this->addRoute('POST', $pattern, $handler, $middleware);
+        return $this;
     }
 
-    public function put(string $pattern, callable|array|string $handler, array $middleware = []): void
+    public function put(string $pattern, callable|array|string $handler, array $middleware = []): self
     {
         $this->addRoute('PUT', $pattern, $handler, $middleware);
+        return $this;
     }
 
-    public function patch(string $pattern, callable|array|string $handler, array $middleware = []): void
+    public function patch(string $pattern, callable|array|string $handler, array $middleware = []): self
     {
         $this->addRoute('PATCH', $pattern, $handler, $middleware);
+        return $this;
     }
 
-    public function delete(string $pattern, callable|array|string $handler, array $middleware = []): void
+    public function delete(string $pattern, callable|array|string $handler, array $middleware = []): self
     {
         $this->addRoute('DELETE', $pattern, $handler, $middleware);
+        return $this;
     }
 
-    public function any(string $pattern, callable|array|string $handler, array $middleware = []): void
+    public function any(string $pattern, callable|array|string $handler, array $middleware = []): self
     {
         foreach (['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as $method) {
             $this->addRoute($method, $pattern, $handler, $middleware);
         }
+        return $this;
+    }
+
+    public function middleware(array $middleware): self
+    {
+        $this->pendingMiddleware = array_merge($this->pendingMiddleware, $middleware);
+        return $this;
     }
 
     public function group(string $prefix, callable $callback, array $middleware = []): void
