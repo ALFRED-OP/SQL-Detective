@@ -129,7 +129,8 @@ class Router
     private function addRoute(string $method, string $pattern, callable|array|string $handler, array $middleware = []): void
     {
         $fullPattern = $this->currentPrefix . $pattern;
-        $fullMiddleware = array_merge($this->currentMiddleware, $middleware);
+        $fullMiddleware = array_merge($this->currentMiddleware, $this->pendingMiddleware, $middleware);
+        $this->pendingMiddleware = [];
         $name = $this->currentRouteName;
         $this->currentRouteName = '';
 
@@ -201,10 +202,11 @@ class Router
     {
         foreach ($middleware as $mw) {
             if (is_string($mw)) {
-                $class = "App\\Middleware\\" . ucfirst($mw) . "Middleware";
+                [$name, $param] = array_pad(explode(':', $mw, 2), 2, null);
+                $class = "App\\Middleware\\" . ucfirst($name) . "Middleware";
                 if (class_exists($class)) {
                     $instance = new $class();
-                    if (!$instance->handle($request)) {
+                    if (!$instance->handle($request, $param)) {
                         return false;
                     }
                 }
@@ -256,7 +258,7 @@ class Router
 
         $url = $this->namedRoutes[$name];
         foreach ($params as $key => $value) {
-            $url = str_replace("{$key}", $value, $url);
+            $url = str_replace('{' . $key . '}', (string)$value, $url);
         }
         return $url;
     }
