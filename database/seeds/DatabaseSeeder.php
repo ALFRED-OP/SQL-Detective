@@ -24,6 +24,8 @@ class DatabaseSeeder
         $this->seedCaseDatabases();
         $this->seedChallenges();
         $this->seedHints();
+        $this->seedSuspects();
+        $this->seedEvidence();
         $this->seedAchievements();
         $this->loadInvestigationData();
         echo "Database seeding completed\n";
