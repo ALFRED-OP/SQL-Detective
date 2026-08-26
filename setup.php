@@ -2,8 +2,6 @@
 define('PROJECT_ROOT', __DIR__);
 require_once PROJECT_ROOT . '/includes/init.php';
 
-ini_set('session.use_cookies', '0');
-
 $command = $argv[1] ?? '';
 
 switch ($command) {
@@ -16,13 +14,13 @@ switch ($command) {
         break;
     case 'seed':
         require PROJECT_ROOT . '/database/seeds/DatabaseSeeder.php';
-        $seeder = new DatabaseSeeder();
+        $seeder = new \Database\Seeds\DatabaseSeeder();
         $seeder->run();
         break;
     case 'setup':
         run_migrations();
         require PROJECT_ROOT . '/database/seeds/DatabaseSeeder.php';
-        $seeder = new DatabaseSeeder();
+        $seeder = new \Database\Seeds\DatabaseSeeder();
         $seeder->run();
         echo "Setup complete!\n";
         break;
@@ -90,8 +88,14 @@ function drop_all_tables(): void {
 
 function get_class_name_from_file(string $file): ?string {
     $content = file_get_contents($file);
-    if (preg_match('/class\s+(\w+)/', $content, $m)) {
-        return $m[1];
+    $namespace = '';
+    $className = '';
+    if (preg_match('/namespace\s+([\w\\\\]+);/', $content, $m)) {
+        $namespace = $m[1];
     }
-    return null;
+    if (preg_match('/class\s+(\w+)/', $content, $m)) {
+        $className = $m[1];
+    }
+    if (!$className) return null;
+    return $namespace ? $namespace . '\\' . $className : $className;
 }

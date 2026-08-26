@@ -23,30 +23,32 @@ env_load(PROJECT_ROOT . '/.env');
 
 require_once PROJECT_ROOT . '/includes/helpers.php';
 
-$sessionConfig = config('security.session');
-ini_set('session.use_cookies', '1');
-ini_set('session.use_only_cookies', '1');
-ini_set('session.cookie_httponly', '1');
-ini_set('session.cookie_secure', $sessionConfig['secure'] ? '1' : '0');
-ini_set('session.cookie_samesite', $sessionConfig['same_site']);
-ini_set('session.gc_maxlifetime', (string)$sessionConfig['lifetime'] * 60);
-ini_set('session.cookie_lifetime', (string)$sessionConfig['lifetime'] * 60);
-if ($sessionConfig['domain']) {
-    ini_set('session.cookie_domain', $sessionConfig['domain']);
+if (php_sapi_name() !== 'cli') {
+    $sessionConfig = config('security.session');
+    ini_set('session.use_cookies', '1');
+    ini_set('session.use_only_cookies', '1');
+    ini_set('session.cookie_httponly', '1');
+    ini_set('session.cookie_secure', $sessionConfig['secure'] ? '1' : '0');
+    ini_set('session.cookie_samesite', $sessionConfig['same_site']);
+    ini_set('session.gc_maxlifetime', (string)$sessionConfig['lifetime'] * 60);
+    ini_set('session.cookie_lifetime', (string)$sessionConfig['lifetime'] * 60);
+    if ($sessionConfig['domain']) {
+        ini_set('session.cookie_domain', $sessionConfig['domain']);
+    }
+    session_name($sessionConfig['cookie']);
+    $sessionPath = $sessionConfig['files'];
+    if (!is_dir($sessionPath)) {
+        mkdir($sessionPath, 0755, true);
+    }
+    session_save_path($sessionPath);
+    if (!is_dir(storage_path('logs'))) {
+        mkdir(storage_path('logs'), 0755, true);
+    }
+    if (!is_dir(storage_path('cache'))) {
+        mkdir(storage_path('cache'), 0755, true);
+    }
+    session_start();
 }
-session_name($sessionConfig['cookie']);
-$sessionPath = $sessionConfig['files'];
-if (!is_dir($sessionPath)) {
-    mkdir($sessionPath, 0755, true);
-}
-session_save_path($sessionPath);
-if (!is_dir(storage_path('logs'))) {
-    mkdir(storage_path('logs'), 0755, true);
-}
-if (!is_dir(storage_path('cache'))) {
-    mkdir(storage_path('cache'), 0755, true);
-}
-session_start();
 
 $headers = config('security.headers', []);
 foreach ($headers as $name => $value) {
@@ -67,6 +69,7 @@ set_error_handler(function($severity, $message, $file, $line) {
 });
 
 require_once PROJECT_ROOT . '/includes/db.php';
+require_once PROJECT_ROOT . '/includes/csrf.php';
 db_connect();
 investigation_db_connect();
 
