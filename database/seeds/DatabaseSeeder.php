@@ -883,4 +883,279 @@ class DatabaseSeeder
             }
         }
     }
+
+    private function seedSuspects(): void
+    {
+        $suspects = [
+            // CASE-001: The Missing Million
+            ['CASE-001', 'Rajesh Kumar', 34, 'Junior Accountant', 'Recently transferred to the finance department. Has access to wire transfer systems. Known gambling debts.', 'Claims to have been on approved leave during the transfers. Verified by HR records.', 'critical'],
+            ['CASE-001', 'Priya Sharma', 42, 'Senior Finance Manager', 'Supervises the accounts payable team. Has authority to approve transfers up to ₹5,00,000.', 'Was in a client meeting in Delhi during the time of the unauthorized transfers. Hotel records confirm.', 'medium'],
+            ['CASE-001', 'Vikram Patel', 28, 'IT Administrator', 'Has root access to the finance server and transaction database. Recently passed over for promotion.', 'Was working on a server migration project. Logs show he was logged into the IT management console.', 'low'],
+
+            // CASE-002: The Digital Trail
+            ['CASE-002', 'Unknown External Actor', NULL, 'N/A', 'Attacker using IP range 203.0.113.x. High technical sophistication. Custom malware detected.', 'No known identity. IP addresses trace to a VPS provider in Eastern Europe.', 'critical'],
+            ['CASE-002', 'DevOps Service Account', NULL, 'Service Account', 'The compromised service account (svc-backup-01) was used as the initial entry point.', 'Service account credentials were found in a phishing email sent to a sysadmin.', 'high'],
+
+            // CASE-003: Employee Portal Breach
+            ['CASE-003', 'Amit Joshi', 29, 'Junior Developer', 'Employee ID 5. Has been self-approving permission changes and accessing HR data.', 'Claims the IT department told him to test the portal permissions for a security audit.', 'high'],
+            ['CASE-003', 'Neha Gupta', 35, 'HR Manager', 'Has legitimate access to employee records. Could have been the initial victim.', 'Was on maternity leave during the suspicious activity period. Leave records verified.', 'low'],
+
+            // CASE-004: The Suspicious Login
+            ['CASE-004', 'Unidentified Attacker', NULL, 'N/A', 'Source IP 45.33.98.77 — external to corporate network. Attempted brute force on admin accounts.', 'IP traces to a VPN exit node in the Netherlands. No identity possible.', 'critical'],
+            ['CASE-004', 'Rajesh Kumar', 34, 'Junior Accountant', 'Employee ID 2. Targeted by 3 failed login attempts from the external IP.', 'Was away from desk during the attack. Badge records show he was in the cafeteria.', 'medium'],
+
+            // CASE-005: Ghost in the System
+            ['CASE-005', 'svc-backup-01 (Compromised)', NULL, 'Service Account', 'Service account normally runs nightly backups. Recently performing unauthorized file access.', 'Account credentials were compromised via a phishing attack on the backup administrator.', 'critical'],
+            ['CASE-005', 'svc-monitor-02', NULL, 'Service Account', 'Monitoring service account. Has read access to most systems for health checks.', 'Behaving normally. Access patterns match its defined scope.', 'low'],
+
+            // CASE-006: The Missing Records
+            ['CASE-006', 'Amit Joshi', 29, 'Junior Developer', 'Employee ID 5. Audit trail shows multiple delete operations on the employees table.', 'Claims he was performing a data cleanup authorized by his manager. No written authorization found.', 'high'],
+
+            // CASE-007: Budget Leaks
+            ['CASE-007', 'Finance Department', NULL, 'Department', 'The Finance department (code FIN) shows the largest budget overage at ₹45,00,000.', 'Finance claims the overage was due to unplanned regulatory compliance costs.', 'medium'],
+            ['CASE-007', 'Manoj Singh', 38, 'Finance Director', 'Authorizes all budget transfers exceeding ₹10,00,000. Approved several high-value transactions.', 'Claims all transfers were properly documented and approved by the CFO.', 'medium'],
+
+            // CASE-008: Phishing Campaign
+            ['CASE-008', 'External Phisher', NULL, 'N/A', 'Unknown party sending phishing emails impersonating IT support. Credentials harvested.', 'Emails originate from compromised accounts and external mail servers.', 'critical'],
+            ['CASE-008', 'Vikram Patel', 28, 'IT Administrator', 'Employee ID 6. May have inadvertently forwarded phishing emails to colleagues.', 'Claims he flagged the emails to the security team immediately.', 'low'],
+
+            // CASE-009: The Night Shift
+            ['CASE-009', 'Amit Joshi', 29, 'Junior Developer', 'Employee ID 5. Multiple night-time logins from external IPs. No night shift assignment.', 'Claims he was working overtime on a deadline. No project records support this.', 'high'],
+            ['CASE-009', 'Rohit Verma', 31, 'Senior Developer', 'Employee ID 13. Night logins from multiple locations including non-office IPs.', 'Was on-call for a production issue. On-call schedule confirms.', 'low'],
+
+            // CASE-010: Duplicate Payments
+            ['CASE-010', 'Rajesh Kumar', 34, 'Junior Accountant', 'Processes vendor payments. Multiple duplicate payments routed to external accounts.', 'Claims the duplicates were system errors in the payment gateway.', 'high'],
+            ['CASE-010', 'TechServe Solutions', NULL, 'Vendor', 'External vendor receiving duplicate payments. Company exists but owner is unknown.', 'Vendor refuses to return duplicate payments citing contractual terms.', 'medium'],
+
+            // CASE-011: The Insider Trading Ring
+            ['CASE-011', 'Employee 3', NULL, 'Confidential', 'Accessed confidential strategy documents and bid proposals before major announcements.', 'Claims access was for routine work. Timing is coincidental.', 'high'],
+
+            // CASE-012: The Shadow Network
+            ['CASE-012', 'Unknown External Actor', NULL, 'N/A', 'Source IP 203.0.113.50 — known malicious IP. Thousands of bytes transferred.', 'IP is associated with a known APT group. Identity not confirmed.', 'critical'],
+
+            // CASE-013: The Fund Diversion
+            ['CASE-013', 'Employee 5 (Sunita Reddy)', 38, 'Senior Accountant', 'Initiated transfers from the main operating account. Used DEV-UNKNOWN-01 device.', 'Claims her credentials were stolen. Device was not company-issued.', 'critical'],
+
+            // CASE-014: The Data Hoarder
+            ['CASE-014', 'Employee 3', NULL, 'Confidential', 'Accessed the most files with confidential, strategy, roadmap, or bid in the name.', 'Cannot provide justification for accessing files outside their department.', 'high'],
+
+            // CASE-015: The Permission Cascade
+            ['CASE-015', 'Amit Joshi', 29, 'Junior Developer', 'Employee ID 5. Started with junior access, escalated to manager-level permissions.', 'Claims each permission was granted by a legitimate approval. Self-approvals found.', 'critical'],
+
+            // CASE-016: The Speed Demon
+            ['CASE-016', 'Employee 6', NULL, 'Service Account', 'Executed 15 automated database queries in 42 seconds. Far beyond human capability.', 'Queries were from an automated script targeting sensitive tables. No legitimate use case.', 'critical'],
+
+            // CASE-017: The Money Mule
+            ['CASE-017', 'Rajesh Kumar', 34, 'Junior Accountant', 'Recently hired employee with ₹20 lakhs in unexplained transactions.', 'Claims the money was from a personal loan. No loan documentation found.', 'high'],
+
+            // CASE-018: The Certificate Heist
+            ['CASE-018', 'Employee 6', NULL, 'Confidential', 'Downloaded multiple certificate and key files from the secure server.', 'Claims it was for a server migration project. No migration project exists.', 'critical'],
+
+            // CASE-019: The Access Anomaly
+            ['CASE-019', 'Employee 6', NULL, 'Confidential', 'Access patterns shifted from finance-only to cross-department access (HR, engineering, admin).', 'No role change or project assignment justifies the pattern shift.', 'high'],
+
+            // CASE-020: The Vendor Fraud
+            ['CASE-020', 'Finance Employee', NULL, 'Finance Dept', 'Initiated payments to external accounts not in the approved vendor list.', 'Claims the vendors were approved verbally by management. No documentation.', 'high'],
+
+            // CASE-021: The APT Attack
+            ['CASE-021', 'APT Actor (APT-28)', NULL, 'N/A', 'Known APT group using custom tools. Initial compromise via phishing email in February 2026.', 'IPs and TTPs match known APT-28 infrastructure. No individual identified.', 'critical'],
+
+            // CASE-022: The Money Puzzle
+            ['CASE-022', 'Employee 5 (Sunita Reddy)', 38, 'Senior Accountant', 'Initiated transfers from the main operating account through intermediary accounts.', 'Claims she was following CFO instructions. CFO denies involvement.', 'critical'],
+
+            // CASE-023: The Zero Day
+            ['CASE-023', 'Unknown Exploiter', NULL, 'N/A', 'Used an unknown vulnerability to gain initial access. Exploited multiple systems.', 'Zero-day exploit. No attribution possible with current intelligence.', 'critical'],
+
+            // CASE-024: The Chain of Command
+            ['CASE-024', 'Management Team', NULL, 'Management', 'Managers, directors, and VP all show self-approval patterns.', 'Each manager claims their actions were within their authority.', 'high'],
+
+            // CASE-025: The Silent Exfiltration
+            ['CASE-025', 'Employee 6', NULL, 'Confidential', 'Top data exfiltrator. Sent data via email, file access, and network transfers.', 'Claims the file transfers were for legitimate backup purposes.', 'critical'],
+
+            // CASE-026: The Phantom Transactions
+            ['CASE-026', 'Employee 5 (Sunita Reddy)', 38, 'Senior Accountant', 'Initiated phantom transactions from external IPs at 2-4 AM.', 'Claims her VPN was compromised. No VPN logs support this.', 'critical'],
+
+            // CASE-027: The Identity Thief
+            ['CASE-027', 'Credential Thief', NULL, 'N/A', 'Stolen credentials used from different IPs within 30-minute windows.', 'Multiple employees show concurrent session patterns. Identity of thief unknown.', 'high'],
+
+            // CASE-028: The Corporate Spy
+            ['CASE-028', 'Employee 6', NULL, 'Confidential', 'Accessed confidential files and emailed them externally within 24 hours.', 'Claims the emails were to a personal account for remote work purposes.', 'critical'],
+
+            // CASE-029: The Cover-Up
+            ['CASE-029', 'Unknown Tamperer', NULL, 'N/A', 'Modified log entries and timestamps to hide malicious activity.', 'Tampering detected through timestamp analysis. Identity not confirmed.', 'critical'],
+
+            // CASE-030: The Mastermind
+            ['CASE-030', 'Employee 5 (Sunita Reddy)', 38, 'Senior Accountant', 'Connected to the most suspicious activities across multiple cases. Common IP addresses and devices.', 'Claims to be a victim of identity theft. Investigation ongoing.', 'critical'],
+        ];
+
+        $caseMap = [];
+        $stmt = $this->db->query("SELECT id, case_code FROM cases");
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $caseMap[$row['case_code']] = $row['id'];
+        }
+
+        foreach ($suspects as $s) {
+            $caseId = $caseMap[$s[0]] ?? null;
+            if (!$caseId) continue;
+
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM suspects WHERE case_id = ? AND name = ?");
+            $stmt->execute([$caseId, $s[1]]);
+            if ($stmt->fetchColumn() === 0) {
+                $this->db->prepare("
+                    INSERT INTO suspects (case_id, name, age, occupation, description, alibi, risk_level)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ")->execute([$caseId, $s[1], $s[2], $s[3], $s[4], $s[5], $s[6]]);
+                echo "Suspect '{$s[1]}' created for {$s[0]}\n";
+            }
+        }
+    }
+
+    private function seedEvidence(): void
+    {
+        $evidence = [
+            // CASE-001: The Missing Million
+            ['CASE-001', 'Transaction Log Extract', 'Bank transfer records showing 13 suspicious transactions from the main operating account to external accounts between Aug 1-22, 2026. Total: ₹42,85,000.', 'log', 'critical'],
+            ['CASE-001', 'Login Session Records', 'Login records showing employee 5 (Sunita Reddy) logged in from IP 203.0.113.42 using device DEV-UNKNOWN-001 during all suspicious transactions.', 'log', 'critical'],
+            ['CASE-001', 'Unknown Device Report', 'Three unregistered devices (DEV-UNKNOWN-001, 002, 003) found on the network. None are company-issued. First seen dates coincide with the start of suspicious activity.', 'record', 'high'],
+            ['CASE-001', 'Employee Access Audit', 'Access logs showing employee 5 accessed the finance database write operations at 2-3 AM on 7 separate occasions.', 'log', 'high'],
+
+            // CASE-002: The Digital Trail
+            ['CASE-002', 'External IP Activity Log', 'Activities from IP 203.0.113.50 on August 12, 2026. Multiple file access, email, and database operations from an unknown external address.', 'log', 'critical'],
+            ['CASE-002', 'Compromised Device Inventory', 'DEV-UNKNOWN-01 identified as the compromised device. Owner unknown. Device first seen Aug 1, 2026.', 'record', 'high'],
+            ['CASE-002', 'Email Forwarding Rules', 'Email forwarding rules set up to automatically send copies of certain emails to external addresses.', 'document', 'high'],
+
+            // CASE-003: Employee Portal Breach
+            ['CASE-003', 'Permission Change Audit Trail', 'Complete record of all permission changes. Employee 5 self-approved role escalation from junior to manager-level access.', 'log', 'critical'],
+            ['CASE-003', 'Data Export Records', 'Three data export operations initiated by employee 5 from IP 192.168.1.14. Exports included salary data and employee records.', 'log', 'high'],
+
+            // CASE-004: The Suspicious Login
+            ['CASE-004', 'Brute Force Attack Log', '20+ failed login attempts from IP 45.33.98.77 targeting admin accounts between Aug 10-12, 2026.', 'log', 'critical'],
+            ['CASE-004', 'Successful External Login', 'One successful login from the attacker IP 45.33.98.77 to employee 14 (Sunita Reddy) account on Aug 10 at 03:25 AM.', 'log', 'critical'],
+
+            // CASE-005: Ghost in the System
+            ['CASE-005', 'Service Account Activity Anomaly', 'svc-backup-01 performed 12 activities outside business hours between Aug 5-15, 2026. Normal scope is limited to nightly backup tasks.', 'log', 'high'],
+            ['CASE-005', 'Unauthorized File Access', 'svc-backup-01 accessed /etc/shadow.bak and user_credentials table on Aug 5 at 2:30 AM. These are outside its normal scope.', 'log', 'critical'],
+
+            // CASE-006: The Missing Records
+            ['CASE-006', 'Audit Trail - Employee Deletions', 'Three DELETE operations on the employees table performed by employee 5 on Aug 8-12, 2026.', 'log', 'critical'],
+            ['CASE-006', 'System Event Logs', 'Security alerts triggered by the employee record modifications. No corresponding authorization forms found.', 'log', 'high'],
+
+            // CASE-007: Budget Leaks
+            ['CASE-007', 'Department Budget Summary', 'Finance department spending exceeds budget by ₹45,00,000. Engineering also over budget by ₹12,00,000.', 'document', 'high'],
+            ['CASE-007', 'Transaction Audit Report', 'High-value transactions initiated by Finance employees totaling ₹1,25,00,000 against a budget of ₹80,00,000.', 'document', 'critical'],
+
+            // CASE-008: Phishing Campaign
+            ['CASE-008', 'Phishing Email Samples', 'Five suspicious emails with subjects about password reset, bonus payment, and account verification. Sent from external addresses.', 'document', 'critical'],
+            ['CASE-008', 'External Sender Analysis', 'Emails from NULL sender IDs or unknown external addresses targeting employees in Finance and HR departments.', 'log', 'high'],
+
+            // CASE-009: The Night Shift
+            ['CASE-009', 'Night Login Records', '12 successful logins between 11 PM and 5 AM from employees without night shift assignments.', 'log', 'high'],
+            ['CASE-009', 'Geo-Location Mismatch', 'Employee 5 (Amit Joshi) logged in from IP 185.220.101.42 — a known Tor exit node — at 2:50 AM on Aug 12.', 'log', 'critical'],
+
+            // CASE-010: Duplicate Payments
+            ['CASE-010', 'Duplicate Transaction Report', '8 pairs of duplicate payments identified. Same amounts sent to the same accounts on the same dates.', 'log', 'critical'],
+            ['CASE-010', 'Vendor Account Analysis', 'External vendor accounts receiving duplicate payments. Account names do not match approved vendor list.', 'record', 'high'],
+
+            // CASE-011: The Insider Trading Ring
+            ['CASE-011', 'File Access Timeline', 'Employees accessed confidential strategy documents, product roadmaps, and bid proposals within 48 hours of major announcements.', 'log', 'critical'],
+            ['CASE-011', 'Confidential File Inventory', 'List of files with "confidential", "strategy", "roadmap", and "bid" in their names. All accessed by user 3.', 'record', 'high'],
+
+            // CASE-012: The Shadow Network
+            ['CASE-012', 'Suspicious Network Connections', 'IP 203.0.113.50 made 45 suspicious connections transferring 12.5 MB of data. Status flagged as suspicious by firewall.', 'log', 'critical'],
+            ['CASE-012', 'Network Traffic Analysis', 'Traffic between internal devices and external IPs showing covert channel patterns using non-standard ports.', 'log', 'high'],
+
+            // CASE-013: The Fund Diversion
+            ['CASE-013', 'Money Trail Summary', 'Trace of ₹50+ lakhs from main operating account through 10+ intermediary accounts to external destinations.', 'log', 'critical'],
+            ['CASE-013', 'External Account Network', 'Three external accounts (IDs 13-15) receiving funds from the main account. Accounts registered to shell companies.', 'record', 'high'],
+
+            // CASE-014: The Data Hoarder
+            ['CASE-014', 'File Access Volume Report', 'User 3 accessed 45+ files with confidential/strategy/roadmap/bid in their names over August 2026.', 'log', 'critical'],
+            ['CASE-014', 'Email Exfiltration Evidence', 'Emails sent by user 3 to external addresses with file attachments matching the accessed confidential files.', 'log', 'high'],
+
+            // CASE-015: The Permission Cascade
+            ['CASE-015', 'Permission Escalation Chain', 'Complete chain of 12 permission changes showing employee 5 escalating from junior access to admin-level permissions.', 'log', 'critical'],
+            ['CASE-015', 'Self-Approval Evidence', 'Employee 5 approved their own permission changes 6 times. No supervisor approval found.', 'log', 'high'],
+
+            // CASE-016: The Speed Demon
+            ['CASE-016', 'Automated Query Log', '15 database queries executed by user 6 in 42 seconds (02:30:00-02:30:42 on Aug 12). Queries targeted users, employees, salary_data, and transactions.', 'log', 'critical'],
+            ['CASE-016', 'Query Pattern Analysis', 'Queries follow a reconnaissance pattern: enumerate users, access sensitive tables, export data. Consistent with automated data theft.', 'document', 'high'],
+
+            // CASE-017: The Money Mule
+            ['CASE-017', 'Recent Hire Transaction Report', 'Employees hired in 2025 or later with transactions exceeding ₹1,00,000. Multiple suspicious transactions found.', 'log', 'high'],
+            ['CASE-017', 'Employee 14 Account Activity', 'Employee 14 (Sunita Reddy) has ₹20+ lakhs in transactions despite being a recent hire in a junior role.', 'log', 'critical'],
+
+            // CASE-018: The Certificate Heist
+            ['CASE-018', 'Certificate File Access Log', 'User 3 accessed 8 certificate-related files (cert, pem, key) from the secure PKI server.', 'log', 'critical'],
+            ['CASE-018', 'Certificate Export Evidence', 'Emails and network transfers containing certificate files sent to external destinations.', 'log', 'high'],
+
+            // CASE-019: The Access Anomaly
+            ['CASE-019', 'Access Pattern Shift Report', 'Employee 6 shifted from accessing only finance resources to accessing engineering, HR, and admin resources in the second half of August.', 'log', 'critical'],
+            ['CASE-019', 'UEBA Alert', 'User and Entity Behavior Analytics flagged employee 6 for accessing 5+ different resource types, up from 1 in the first half of the month.', 'log', 'high'],
+
+            // CASE-020: The Vendor Fraud
+            ['CASE-020', 'External Payment Report', 'Finance department employees initiated ₹65+ lakhs in payments to external accounts not in the approved vendor list.', 'log', 'critical'],
+            ['CASE-020', 'Vendor Verification Report', 'Multiple vendor accounts receiving payments do not appear in the approved vendor database. Shell company indicators.', 'document', 'high'],
+
+            // CASE-021: The APT Attack
+            ['CASE-021', 'APT Timeline', '6-month attack lifecycle from initial phishing compromise (Feb 2026) through lateral movement, privilege escalation, to data exfiltration.', 'log', 'critical'],
+            ['CASE-021', 'Compromise Indicators', 'IOCs including IP addresses (203.0.113.x), device fingerprints, and malware signatures matching APT-28 TTPs.', 'document', 'critical'],
+
+            // CASE-022: The Money Puzzle
+            ['CASE-022', 'Multi-Hop Transfer Map', '₹1 crore traced through 15+ transactions across 4 levels. Money splits and recombines through intermediary accounts.', 'log', 'critical'],
+            ['CASE-022', 'Shell Company Network', 'Intermediary accounts registered to companies with shared directors and overlapping addresses.', 'document', 'high'],
+
+            // CASE-023: The Zero Day
+            ['CASE-023', 'Critical Security Events', '8 critical-severity log entries showing exploit activity across multiple systems on the same dates.', 'log', 'critical'],
+            ['CASE-023', 'Exploit Fragment Analysis', 'Unusual process starts, network connections, and file modifications correlated with the exploit timeline.', 'document', 'high'],
+
+            // CASE-024: The Chain of Command
+            ['CASE-024', 'Manager Self-Approvals', 'Managers and directors approved their own permission changes, budget requests, and access grants.', 'log', 'critical'],
+            ['CASE-024', 'Out-of-Department Access', 'Director (employee 3) accessed engineering, marketing, and HR resources — all outside their department scope.', 'log', 'high'],
+
+            // CASE-025: The Silent Exfiltration
+            ['CASE-025', 'Exfiltration Method Summary', 'Data exported via email (32 events), file access (28 events), and network transfers (15 events) over 3 months.', 'log', 'critical'],
+            ['CASE-025', 'User 6 Export Activity', 'User 6 is the top data exfiltrator with 45+ events across all methods. Total estimated data: 500+ MB.', 'log', 'critical'],
+
+            // CASE-026: The Phantom Transactions
+            ['CASE-026', 'Phantom Transaction Report', '13 completed transactions from external IPs (not 192.168.x.x) between 2-4 AM. Bank has no record of these.', 'log', 'critical'],
+            ['CASE-026', 'Bank Reconciliation Gap', '₹75+ lakhs in company ledger transactions that do not appear in bank statements. All from DEV-UNKNOWN devices.', 'document', 'critical'],
+
+            // CASE-027: The Identity Thief
+            ['CASE-027', 'Concurrent Session Report', '4 employees (IDs 4, 5, 7, 13) show concurrent logins from different IPs within 30-minute windows.', 'log', 'critical'],
+            ['CASE-027', 'Suspicious IP Analysis', 'External IPs used in concurrent sessions include 203.0.113.50, 198.51.100.10, and 45.33.32.156 — known malicious ranges.', 'log', 'high'],
+
+            // CASE-028: The Corporate Spy
+            ['CASE-028', 'File-to-Email Correlation', '3 instances where confidential files were accessed and emailed externally within 24 hours.', 'log', 'critical'],
+            ['CASE-028', 'Competitor Material Match', 'Marketing strategy and bid proposal documents found in competitor materials match company internal versions.', 'document', 'high'],
+
+            // CASE-029: The Cover-Up
+            ['CASE-029', 'Log Integrity Report', 'Duplicate log entries and timestamp inconsistencies detected. Some entries appear twice within 5 seconds.', 'log', 'critical'],
+            ['CASE-029', 'Timestamp Anomaly Map', 'Log timestamps that are out of sequence or precede the previous entry. Gaps suggest deleted records.', 'log', 'high'],
+
+            // CASE-030: The Mastermind
+            ['CASE-030', 'Cross-Case Connection Map', 'Common IPs (203.0.113.x), devices (DEV-UNKNOWN-001), and employees appear across 8+ cases.', 'log', 'critical'],
+            ['CASE-030', 'Employee 5 Activity Summary', 'Employee 5 (Sunita Reddy) appears in transaction logs, login records, access logs, and device associations across multiple cases.', 'record', 'critical'],
+        ];
+
+        $caseMap = [];
+        $stmt = $this->db->query("SELECT id, case_code FROM cases");
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $caseMap[$row['case_code']] = $row['id'];
+        }
+
+        foreach ($evidence as $e) {
+            $caseId = $caseMap[$e[0]] ?? null;
+            if (!$caseId) continue;
+
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM evidence WHERE case_id = ? AND title = ?");
+            $stmt->execute([$caseId, $e[1]]);
+            if ($stmt->fetchColumn() === 0) {
+                $this->db->prepare("
+                    INSERT INTO evidence (case_id, title, description, evidence_type, importance)
+                    VALUES (?, ?, ?, ?, ?)
+                ")->execute([$caseId, $e[1], $e[2], $e[3], $e[4]]);
+                echo "Evidence '{$e[1]}' created for {$e[0]}\n";
+            }
+        }
+    }
 }

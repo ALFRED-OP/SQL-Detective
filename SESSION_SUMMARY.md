@@ -115,12 +115,17 @@ Build a complete "SQL Detective" web application — an interactive database inv
 All core features are complete with all critical bugs fixed:
 - 100+ files across MVC structure
 - 34 views (including 3 new auth views)
-- 30 investigation cases defined with challenges and hints
+- 30 investigation cases with challenges, hints, suspects, and evidence
+- 60 challenges across all 30 cases (2-3 per case)
+- 30 suspects across all 30 cases (1-3 per case)
+- 60 evidence items across all 30 cases (2-4 per case)
 - 3 fully seeded investigation databases (schemas + base data + supplemental data for all 30 cases)
+- Auto-loading of investigation databases via `php artisan db:seed`
+- Per-case investigation database routing (`investigationDbFor()`)
 - Complete CSS design system with dark/light mode
 - Full JavaScript for workspace, admin, and global functionality
 - 9 error pages
-- 3 documentation files
+- 3 documentation files (INSTALLATION, ARCHITECTURE, API)
 - Apache .htaccess with security and caching
 - Storage directories: cache, logs, sessions
 
@@ -144,8 +149,7 @@ All core features are complete with all critical bugs fixed:
 - .gitignore blocking investigation DB .sql files
 
 ### Known Remaining Issues
-1. Suspect and evidence records for each case in the main DB (not strictly required — investigations work without these)
-2. Final PHP syntax verification (not possible without PHP on this Windows dev environment)
+1. Final PHP syntax verification (not possible without PHP on this Windows dev environment)
 
 ## Key File Paths
 - Project root: `D:\personal\A LVL PMM Project\SQL-Detective\SQL-Detective\`
