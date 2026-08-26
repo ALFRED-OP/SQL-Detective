@@ -4,7 +4,7 @@
 
 - **PHP** 8.1 or higher (no Composer needed)
 - **MySQL** 8.0 or MariaDB 10.6+
-- **Apache** 2.4+ with `mod_rewrite` enabled
+- **Apache** 2.4+ with `mod_rewrite` enabled, or **Nginx**
 
 ## Step 1: Clone the Repository
 
@@ -30,41 +30,41 @@ APP_DEBUG=true
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=sql_detective
-DB_USERNAME=sql_detective_user
+DB_NAME=sqldetective
+DB_USER=sqldetectiveapp
 DB_PASSWORD=your_secure_password
 
 DB_INVESTIGATION_HOST=127.0.0.1
 DB_INVESTIGATION_PORT=3306
-DB_INVESTIGATION_NAME=corporate_finance
-DB_INVESTIGATION_USER=sql_detective_readonly
+DB_INVESTIGATION_NAME=corporatefinance
+DB_INVESTIGATION_USER=sqldetectivereadonly
 DB_INVESTIGATION_PASSWORD=readonly_password_here
 ```
 
 ## Step 3: Create Databases
 
 ```sql
-CREATE DATABASE sql_detective CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE DATABASE corporate_finance CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE DATABASE digital_forensics CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE DATABASE employee_portal CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE sqldetective CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE corporatefinance CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE digitalforensics CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE employeeportal CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 ## Step 4: Create Database Users
 
 ```sql
 -- Application user (read/write for app tables, full access during seeding)
-CREATE USER 'sql_detective_user'@'localhost' IDENTIFIED BY 'your_secure_password';
-GRANT SELECT, INSERT, UPDATE, DELETE ON sql_detective.* TO 'sql_detective_user'@'localhost';
-GRANT ALL PRIVILEGES ON corporate_finance.* TO 'sql_detective_user'@'localhost';
-GRANT ALL PRIVILEGES ON digital_forensics.* TO 'sql_detective_user'@'localhost';
-GRANT ALL PRIVILEGES ON employee_portal.* TO 'sql_detective_user'@'localhost';
+CREATE USER 'sqldetectiveapp'@'localhost' IDENTIFIED BY 'your_secure_password';
+GRANT SELECT, INSERT, UPDATE, DELETE ON sqldetective.* TO 'sqldetectiveapp'@'localhost';
+GRANT ALL PRIVILEGES ON corporatefinance.* TO 'sqldetectiveapp'@'localhost';
+GRANT ALL PRIVILEGES ON digitalforensics.* TO 'sqldetectiveapp'@'localhost';
+GRANT ALL PRIVILEGES ON employeeportal.* TO 'sqldetectiveapp'@'localhost';
 
 -- Investigation user (read-only for investigation databases)
-CREATE USER 'sql_detective_readonly'@'localhost' IDENTIFIED BY 'readonly_password_here';
-GRANT SELECT ON corporate_finance.* TO 'sql_detective_readonly'@'localhost';
-GRANT SELECT ON digital_forensics.* TO 'sql_detective_readonly'@'localhost';
-GRANT SELECT ON employee_portal.* TO 'sql_detective_readonly'@'localhost';
+CREATE USER 'sqldetectivereadonly'@'localhost' IDENTIFIED BY 'readonly_password_here';
+GRANT SELECT ON corporatefinance.* TO 'sqldetectivereadonly'@'localhost';
+GRANT SELECT ON digitalforensics.* TO 'sqldetectivereadonly'@'localhost';
+GRANT SELECT ON employeeportal.* TO 'sqldetectivereadonly'@'localhost';
 
 FLUSH PRIVILEGES;
 ```
@@ -100,6 +100,26 @@ Point your web server document root to the `public/` directory.
     ErrorLog ${APACHE_LOG_DIR}/sql-detective-error.log
     CustomLog ${APACHE_LOG_DIR}/sql-detective-access.log combined
 </VirtualHost>
+```
+
+**Nginx:**
+```nginx
+server {
+    listen 80;
+    server_name sql-detective.local;
+    root /path/to/sql-detective/public;
+    index index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+}
 ```
 
 ## Step 7: Set Permissions

@@ -136,12 +136,12 @@ Variables passed to `view()` are extracted into the template scope.
 
 ### Two Database Connections
 
-1. **Application Database** (`sql_detective`)
+1. **Application Database** (`sqldetective`)
    - Stores users, cases, challenges, achievements, progress
    - Connected via `DB_*` env variables
    - Full CRUD permissions
 
-2. **Investigation Databases** (`corporate_finance`, `digital_forensics`, `employee_portal`)
+2. **Investigation Databases** (`corporatefinance`, `digitalforensics`, `employeeportal`)
    - Read-only databases that players query
    - Connected via `DB_INVESTIGATION_*` env variables
    - SELECT-only permissions

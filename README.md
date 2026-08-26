@@ -49,17 +49,17 @@ cp .env.example .env
 ### 3. Create Databases
 
 ```sql
-CREATE DATABASE sql_detective CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE DATABASE corporate_finance CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE DATABASE digital_forensics CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE DATABASE employee_portal CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE sqldetective CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE corporatefinance CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE digitalforensics CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE employeeportal CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Create app user (full access for seeding, restrict after)
-CREATE USER 'sql_detective_app'@'localhost' IDENTIFIED BY 'secure_password';
-GRANT ALL PRIVILEGES ON sql_detective.* TO 'sql_detective_app'@'localhost';
-GRANT ALL PRIVILEGES ON corporate_finance.* TO 'sql_detective_app'@'localhost';
-GRANT ALL PRIVILEGES ON digital_forensics.* TO 'sql_detective_app'@'localhost';
-GRANT ALL PRIVILEGES ON employee_portal.* TO 'sql_detective_app'@'localhost';
+CREATE USER 'sqldetectiveapp'@'localhost' IDENTIFIED BY 'secure_password';
+GRANT ALL PRIVILEGES ON sqldetective.* TO 'sqldetectiveapp'@'localhost';
+GRANT ALL PRIVILEGES ON corporatefinance.* TO 'sqldetectiveapp'@'localhost';
+GRANT ALL PRIVILEGES ON digitalforensics.* TO 'sqldetectiveapp'@'localhost';
+GRANT ALL PRIVILEGES ON employeeportal.* TO 'sqldetectiveapp'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
@@ -75,12 +75,12 @@ This runs migrations and seeds all 30 cases, challenges, suspects, evidence, and
 
 ```sql
 -- Revoke write access on investigation DBs
-REVOKE ALL PRIVILEGES ON corporate_finance.* FROM 'sql_detective_app'@'localhost';
-REVOKE ALL PRIVILEGES ON digital_forensics.* FROM 'sql_detective_app'@'localhost';
-REVOKE ALL PRIVILEGES ON employee_portal.* FROM 'sql_detective_app'@'localhost';
-GRANT SELECT ON corporate_finance.* TO 'sql_detective_app'@'localhost';
-GRANT SELECT ON digital_forensics.* TO 'sql_detective_app'@'localhost';
-GRANT SELECT ON employee_portal.* TO 'sql_detective_app'@'localhost';
+REVOKE ALL PRIVILEGES ON corporatefinance.* FROM 'sqldetectiveapp'@'localhost';
+REVOKE ALL PRIVILEGES ON digitalforensics.* FROM 'sqldetectiveapp'@'localhost';
+REVOKE ALL PRIVILEGES ON employeeportal.* FROM 'sqldetectiveapp'@'localhost';
+GRANT SELECT ON corporatefinance.* TO 'sqldetectiveapp'@'localhost';
+GRANT SELECT ON digitalforensics.* TO 'sqldetectiveapp'@'localhost';
+GRANT SELECT ON employeeportal.* TO 'sqldetectiveapp'@'localhost';
 FLUSH PRIVILEGES;
 ```
 

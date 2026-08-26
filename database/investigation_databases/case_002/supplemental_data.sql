@@ -1,7 +1,7 @@
--- Supplemental seed data for digital_forensics investigation database
+-- Supplemental seed data for digitalforensics investigation database
 -- Supports cases 005, 008, 011, 012, 014, 016, 018, 021, 023, 025, 028, 029
 
-USE `digital_forensics`;
+USE `digitalforensics`;
 
 -- ============================================================
 -- CASE-005: Ghost in the System

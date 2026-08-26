@@ -1,4 +1,4 @@
-USE `digital_forensics`;
+USE `digitalforensics`;
 
 -- Seed devices
 INSERT INTO `devices` (`id`, `device_name`, `device_type`, `ip_address`, `mac_address`, `os`, `location`, `owner_id`, `status`, `first_seen`, `last_seen`) VALUES

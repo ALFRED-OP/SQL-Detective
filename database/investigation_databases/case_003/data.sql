@@ -1,4 +1,4 @@
-USE `employee_portal`;
+USE `employeeportal`;
 
 -- Seed departments
 INSERT INTO `departments` (`id`, `name`, `code`, `budget`) VALUES

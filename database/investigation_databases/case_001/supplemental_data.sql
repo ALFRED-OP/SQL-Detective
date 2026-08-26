@@ -1,7 +1,7 @@
--- Supplemental seed data for corporate_finance investigation database
+-- Supplemental seed data for corporatefinance investigation database
 -- Supports cases 004, 007, 010, 013, 017, 020, 022, 026, 030
 
-USE `corporate_finance`;
+USE `corporatefinance`;
 
 -- ============================================================
 -- Additional employees hired in 2025-2026 (for CASE-017 Money Mule)
@@ -204,14 +204,14 @@ INSERT INTO `transactions` (`transaction_id`, `transaction_date`, `amount`, `cur
 -- ============================================================
 INSERT INTO `access_logs` (`employee_id`, `resource_type`, `resource_name`, `action`, `access_time`, `ip_address`, `device_id`, `location_id`, `success`) VALUES
 -- Employee 14 (Pooja Thakur - System Admin) suspicious access
-(14, 'database', 'corporate_finance', 'write', '2026-08-10 03:30:00', '45.33.98.77', 'DEV-UNKNOWN-002', 5, TRUE),
+(14, 'database', 'corporatefinance', 'write', '2026-08-10 03:30:00', '45.33.98.77', 'DEV-UNKNOWN-002', 5, TRUE),
 (14, 'file', 'bank_accounts_backup.sql', 'export', '2026-08-10 03:35:00', '45.33.98.77', 'DEV-UNKNOWN-002', 5, TRUE),
-(14, 'database', 'corporate_finance', 'read', '2026-08-10 03:40:00', '45.33.98.77', 'DEV-UNKNOWN-002', 5, TRUE),
+(14, 'database', 'corporatefinance', 'read', '2026-08-10 03:40:00', '45.33.98.77', 'DEV-UNKNOWN-002', 5, TRUE),
 -- Employee 5 accessing from Singapore IP (cross-case link)
-(5, 'database', 'corporate_finance', 'write', '2026-08-03 02:45:00', '10.10.1.45', 'DEV-UNKNOWN-001', 6, TRUE),
+(5, 'database', 'corporatefinance', 'write', '2026-08-03 02:45:00', '10.10.1.45', 'DEV-UNKNOWN-001', 6, TRUE),
 -- Employee 5 accessing from DEV-UNKNOWN-003
 (5, 'system', 'Finance Management System', 'read', '2026-08-15 02:50:00', '185.220.101.42', 'DEV-UNKNOWN-003', 5, TRUE),
-(5, 'database', 'corporate_finance', 'write', '2026-08-15 02:55:00', '185.220.101.42', 'DEV-UNKNOWN-003', 5, TRUE);
+(5, 'database', 'corporatefinance', 'write', '2026-08-15 02:55:00', '185.220.101.42', 'DEV-UNKNOWN-003', 5, TRUE);
 
 -- ============================================================
 -- Additional login logs for employee 14 (cross-case connection)

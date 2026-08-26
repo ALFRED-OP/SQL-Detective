@@ -1,9 +1,9 @@
 -- CASE #002: The Digital Trail
--- Database: digital_forensics
+-- Database: digitalforensics
 -- Tables: devices, users, activities, files, network_logs, emails, logs, timestamps
 
-CREATE DATABASE IF NOT EXISTS `digital_forensics` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `digital_forensics`;
+CREATE DATABASE IF NOT EXISTS `digitalforensics` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `digitalforensics`;
 
 CREATE TABLE `devices` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,

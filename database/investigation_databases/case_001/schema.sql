@@ -1,9 +1,9 @@
 -- CASE #001: The Missing Million
--- Database: corporate_finance
+-- Database: corporatefinance
 -- Tables: employees, departments, transactions, bank_accounts, login_logs, access_logs, devices, locations
 
-CREATE DATABASE IF NOT EXISTS `corporate_finance` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `corporate_finance`;
+CREATE DATABASE IF NOT EXISTS `corporatefinance` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `corporatefinance`;
 
 -- Departments table
 CREATE TABLE `departments` (

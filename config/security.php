@@ -10,7 +10,7 @@ return [
         'table' => 'sessions',
         'store' => 'file',
         'lottery' => [2, 100],
-        'cookie' => env('SESSION_COOKIE', 'sql_detective_session'),
+        'cookie' => env('SESSION_COOKIE', 'sqldetectivesession'),
         'path' => '/',
         'domain' => env('SESSION_DOMAIN', null),
         'secure' => env('SESSION_SECURE', true),

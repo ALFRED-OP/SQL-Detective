@@ -1,9 +1,9 @@
 -- CASE #003: Employee Portal Breach
--- Database: employee_portal
+-- Database: employeeportal
 -- Tables: employees, departments, access_logs, login_records, permission_changes, audit_trail, system_events, ip_addresses
 
-CREATE DATABASE IF NOT EXISTS `employee_portal` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `employee_portal`;
+CREATE DATABASE IF NOT EXISTS `employeeportal` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `employeeportal`;
 
 CREATE TABLE `departments` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,

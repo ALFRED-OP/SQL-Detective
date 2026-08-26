@@ -92,7 +92,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'The query should return suspicious late-night transactions with amounts greater than ₹500,000.',
                 'xp_reward' => 150,
                 'estimated_minutes' => 20,
-                'investigation_db' => 'corporate_finance',
+                'investigation_db' => 'corporatefinance',
             ],
             [
                 'case_code' => 'CASE-002',
@@ -105,7 +105,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'The query should identify the suspicious activities from unknown external IPs.',
                 'xp_reward' => 200,
                 'estimated_minutes' => 30,
-                'investigation_db' => 'digital_forensics',
+                'investigation_db' => 'digitalforensics',
             ],
             [
                 'case_code' => 'CASE-003',
@@ -118,7 +118,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'The query should reveal self-granted permission escalations.',
                 'xp_reward' => 150,
                 'estimated_minutes' => 20,
-                'investigation_db' => 'employee_portal',
+                'investigation_db' => 'employeeportal',
             ],
             [
                 'case_code' => 'CASE-004',
@@ -131,7 +131,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Return non-office login attempts showing suspicious patterns.',
                 'xp_reward' => 100,
                 'estimated_minutes' => 15,
-                'investigation_db' => 'corporate_finance',
+                'investigation_db' => 'corporatefinance',
             ],
             [
                 'case_code' => 'CASE-005',
@@ -144,7 +144,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Identify service account activities during unusual hours.',
                 'xp_reward' => 100,
                 'estimated_minutes' => 15,
-                'investigation_db' => 'digital_forensics',
+                'investigation_db' => 'digitalforensics',
             ],
             [
                 'case_code' => 'CASE-006',
@@ -157,7 +157,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Return all modification operations on employee records.',
                 'xp_reward' => 100,
                 'estimated_minutes' => 15,
-                'investigation_db' => 'employee_portal',
+                'investigation_db' => 'employeeportal',
             ],
             [
                 'case_code' => 'CASE-007',
@@ -170,7 +170,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Show departments where actual spending exceeds their budget.',
                 'xp_reward' => 120,
                 'estimated_minutes' => 20,
-                'investigation_db' => 'corporate_finance',
+                'investigation_db' => 'corporatefinance',
             ],
             [
                 'case_code' => 'CASE-008',
@@ -183,7 +183,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Identify suspicious emails in the system.',
                 'xp_reward' => 100,
                 'estimated_minutes' => 15,
-                'investigation_db' => 'digital_forensics',
+                'investigation_db' => 'digitalforensics',
             ],
             [
                 'case_code' => 'CASE-009',
@@ -196,7 +196,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Show night-time login patterns for non-shift employees.',
                 'xp_reward' => 100,
                 'estimated_minutes' => 15,
-                'investigation_db' => 'employee_portal',
+                'investigation_db' => 'employeeportal',
             ],
             [
                 'case_code' => 'CASE-010',
@@ -209,7 +209,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Identify duplicate payment patterns.',
                 'xp_reward' => 120,
                 'estimated_minutes' => 20,
-                'investigation_db' => 'corporate_finance',
+                'investigation_db' => 'corporatefinance',
             ],
 
             // ─── INTERMEDIATE (Cases 11-20) ────────────────────
@@ -224,7 +224,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Identify employees with suspicious file access timing.',
                 'xp_reward' => 250,
                 'estimated_minutes' => 35,
-                'investigation_db' => 'digital_forensics',
+                'investigation_db' => 'digitalforensics',
             ],
             [
                 'case_code' => 'CASE-012',
@@ -237,7 +237,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Show suspicious network communication patterns by source.',
                 'xp_reward' => 250,
                 'estimated_minutes' => 30,
-                'investigation_db' => 'digital_forensics',
+                'investigation_db' => 'digitalforensics',
             ],
             [
                 'case_code' => 'CASE-013',
@@ -250,7 +250,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Map the complete money flow from source to destination.',
                 'xp_reward' => 300,
                 'estimated_minutes' => 40,
-                'investigation_db' => 'corporate_finance',
+                'investigation_db' => 'corporatefinance',
             ],
             [
                 'case_code' => 'CASE-014',
@@ -263,7 +263,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Identify employees with excessive file access patterns.',
                 'xp_reward' => 250,
                 'estimated_minutes' => 35,
-                'investigation_db' => 'digital_forensics',
+                'investigation_db' => 'digitalforensics',
             ],
             [
                 'case_code' => 'CASE-015',
@@ -276,7 +276,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Show the progression of permission escalations over time.',
                 'xp_reward' => 250,
                 'estimated_minutes' => 30,
-                'investigation_db' => 'employee_portal',
+                'investigation_db' => 'employeeportal',
             ],
             [
                 'case_code' => 'CASE-016',
@@ -289,7 +289,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Identify automated high-frequency database access patterns.',
                 'xp_reward' => 200,
                 'estimated_minutes' => 25,
-                'investigation_db' => 'digital_forensics',
+                'investigation_db' => 'digitalforensics',
             ],
             [
                 'case_code' => 'CASE-017',
@@ -302,7 +302,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Identify suspicious transactions by recent hires.',
                 'xp_reward' => 250,
                 'estimated_minutes' => 35,
-                'investigation_db' => 'corporate_finance',
+                'investigation_db' => 'corporatefinance',
             ],
             [
                 'case_code' => 'CASE-018',
@@ -315,7 +315,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Trace access to digital certificate files.',
                 'xp_reward' => 200,
                 'estimated_minutes' => 25,
-                'investigation_db' => 'digital_forensics',
+                'investigation_db' => 'digitalforensics',
             ],
             [
                 'case_code' => 'CASE-019',
@@ -328,7 +328,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Identify employees with abnormal access pattern changes.',
                 'xp_reward' => 250,
                 'estimated_minutes' => 35,
-                'investigation_db' => 'employee_portal',
+                'investigation_db' => 'employeeportal',
             ],
             [
                 'case_code' => 'CASE-020',
@@ -341,7 +341,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Identify payments to external accounts initiated by finance staff.',
                 'xp_reward' => 250,
                 'estimated_minutes' => 35,
-                'investigation_db' => 'corporate_finance',
+                'investigation_db' => 'corporatefinance',
             ],
 
             // ─── ADVANCED (Cases 21-30) ────────────────────────
@@ -356,7 +356,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Build a complete APT timeline from initial compromise to exfiltration.',
                 'xp_reward' => 500,
                 'estimated_minutes' => 60,
-                'investigation_db' => 'digital_forensics',
+                'investigation_db' => 'digitalforensics',
             ],
             [
                 'case_code' => 'CASE-022',
@@ -369,7 +369,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Reconstruct the complete multi-hop money laundering chain.',
                 'xp_reward' => 500,
                 'estimated_minutes' => 60,
-                'investigation_db' => 'corporate_finance',
+                'investigation_db' => 'corporatefinance',
             ],
             [
                 'case_code' => 'CASE-023',
@@ -382,7 +382,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Reconstruct the zero-day exploit chain from multiple data sources.',
                 'xp_reward' => 500,
                 'estimated_minutes' => 60,
-                'investigation_db' => 'digital_forensics',
+                'investigation_db' => 'digitalforensics',
             ],
             [
                 'case_code' => 'CASE-024',
@@ -395,7 +395,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Identify the complete pattern of authority abuse.',
                 'xp_reward' => 400,
                 'estimated_minutes' => 50,
-                'investigation_db' => 'employee_portal',
+                'investigation_db' => 'employeeportal',
             ],
             [
                 'case_code' => 'CASE-025',
@@ -408,7 +408,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Detect cumulative data exfiltration patterns over time.',
                 'xp_reward' => 400,
                 'estimated_minutes' => 50,
-                'investigation_db' => 'digital_forensics',
+                'investigation_db' => 'digitalforensics',
             ],
             [
                 'case_code' => 'CASE-026',
@@ -421,7 +421,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Identify phantom transactions that don\'t match bank records.',
                 'xp_reward' => 450,
                 'estimated_minutes' => 55,
-                'investigation_db' => 'corporate_finance',
+                'investigation_db' => 'corporatefinance',
             ],
             [
                 'case_code' => 'CASE-027',
@@ -434,7 +434,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Identify credential sharing or theft through concurrent session analysis.',
                 'xp_reward' => 400,
                 'estimated_minutes' => 50,
-                'investigation_db' => 'employee_portal',
+                'investigation_db' => 'employeeportal',
             ],
             [
                 'case_code' => 'CASE-028',
@@ -447,7 +447,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Trace the information flow from internal files to external emails.',
                 'xp_reward' => 450,
                 'estimated_minutes' => 55,
-                'investigation_db' => 'digital_forensics',
+                'investigation_db' => 'digitalforensics',
             ],
             [
                 'case_code' => 'CASE-029',
@@ -460,7 +460,7 @@ class DatabaseSeeder
                 'expected_result_description' => 'Detect log tampering through timestamp and sequence analysis.',
                 'xp_reward' => 500,
                 'estimated_minutes' => 60,
-                'investigation_db' => 'digital_forensics',
+                'investigation_db' => 'digitalforensics',
             ],
             [
                 'case_code' => 'CASE-030',
@@ -469,11 +469,11 @@ class DatabaseSeeder
                 'difficulty' => 'advanced',
                 'category' => 'Criminal Mastermind',
                 'briefing' => 'This is the final investigation. All the previous cases — the financial fraud, the data breaches, the insider threats — are connected. The mastermind has been orchestrating everything while staying hidden behind layers of indirection. Using all the evidence gathered from cases 001-029, identify the common links and expose the criminal mastermind.',
-                'objective' => 'Write a query that finds the common IP addresses, devices, or employees that appear across multiple suspicious activities in the corporate_finance database. Return the connecting elements and their frequency across different types of suspicious activities.',
+                'objective' => 'Write a query that finds the common IP addresses, devices, or employees that appear across multiple suspicious activities in the corporatefinance database. Return the connecting elements and their frequency across different types of suspicious activities.',
                 'expected_result_description' => 'Connect the dots across all cases to identify the mastermind.',
                 'xp_reward' => 1000,
                 'estimated_minutes' => 90,
-                'investigation_db' => 'corporate_finance',
+                'investigation_db' => 'corporatefinance',
             ],
         ];
 
@@ -504,36 +504,36 @@ class DatabaseSeeder
     private function seedCaseDatabases(): void
     {
         $caseDbMap = [
-            'CASE-001' => ['corporate_finance', 'Financial transactions, employee accounts, and audit logs'],
-            'CASE-002' => ['digital_forensics', 'User activities, files, network logs, and communications'],
-            'CASE-003' => ['employee_portal', 'Employee records, access logs, and permission changes'],
-            'CASE-004' => ['corporate_finance', 'Login attempts and IP tracking data'],
-            'CASE-005' => ['digital_forensics', 'Service account activities and scheduling data'],
-            'CASE-006' => ['employee_portal', 'Audit trail and record modifications'],
-            'CASE-007' => ['corporate_finance', 'Department budgets and employee spending'],
-            'CASE-008' => ['digital_forensics', 'Email communications and network logs'],
-            'CASE-009' => ['employee_portal', 'Login records and geographic data'],
-            'CASE-010' => ['corporate_finance', 'Transaction patterns and duplicate detection'],
-            'CASE-011' => ['digital_forensics', 'File access patterns and timestamps'],
-            'CASE-012' => ['digital_forensics', 'Network traffic and data transfers'],
-            'CASE-013' => ['corporate_finance', 'Money flow through bank accounts'],
-            'CASE-014' => ['digital_forensics', 'File access volumes and user activities'],
-            'CASE-015' => ['employee_portal', 'Permission change chains and escalation'],
-            'CASE-016' => ['digital_forensics', 'Database queries and automation patterns'],
-            'CASE-017' => ['corporate_finance', 'Recent hires and transaction patterns'],
-            'CASE-018' => ['digital_forensics', 'Certificate and key file access'],
-            'CASE-019' => ['employee_portal', 'Access pattern analysis across resources'],
-            'CASE-020' => ['corporate_finance', 'External payments and fraud detection'],
-            'CASE-021' => ['digital_forensics', 'APT timeline and attack reconstruction'],
-            'CASE-022' => ['corporate_finance', 'Multi-hop money laundering trails'],
-            'CASE-023' => ['digital_forensics', 'System logs and security events'],
-            'CASE-024' => ['employee_portal', 'Manager self-approvals and access abuse'],
-            'CASE-025' => ['digital_forensics', 'Data exfiltration methods and totals'],
-            'CASE-026' => ['corporate_finance', 'Phantom transactions and fraud patterns'],
-            'CASE-027' => ['employee_portal', 'Concurrent sessions and identity theft'],
-            'CASE-028' => ['digital_forensics', 'Info leaks and email-file correlations'],
-            'CASE-029' => ['digital_forensics', 'Log integrity and tampering detection'],
-            'CASE-030' => ['corporate_finance', 'Cross-database correlation and mastermind identification'],
+            'CASE-001' => ['corporatefinance', 'Financial transactions, employee accounts, and audit logs'],
+            'CASE-002' => ['digitalforensics', 'User activities, files, network logs, and communications'],
+            'CASE-003' => ['employeeportal', 'Employee records, access logs, and permission changes'],
+            'CASE-004' => ['corporatefinance', 'Login attempts and IP tracking data'],
+            'CASE-005' => ['digitalforensics', 'Service account activities and scheduling data'],
+            'CASE-006' => ['employeeportal', 'Audit trail and record modifications'],
+            'CASE-007' => ['corporatefinance', 'Department budgets and employee spending'],
+            'CASE-008' => ['digitalforensics', 'Email communications and network logs'],
+            'CASE-009' => ['employeeportal', 'Login records and geographic data'],
+            'CASE-010' => ['corporatefinance', 'Transaction patterns and duplicate detection'],
+            'CASE-011' => ['digitalforensics', 'File access patterns and timestamps'],
+            'CASE-012' => ['digitalforensics', 'Network traffic and data transfers'],
+            'CASE-013' => ['corporatefinance', 'Money flow through bank accounts'],
+            'CASE-014' => ['digitalforensics', 'File access volumes and user activities'],
+            'CASE-015' => ['employeeportal', 'Permission change chains and escalation'],
+            'CASE-016' => ['digitalforensics', 'Database queries and automation patterns'],
+            'CASE-017' => ['corporatefinance', 'Recent hires and transaction patterns'],
+            'CASE-018' => ['digitalforensics', 'Certificate and key file access'],
+            'CASE-019' => ['employeeportal', 'Access pattern analysis across resources'],
+            'CASE-020' => ['corporatefinance', 'External payments and fraud detection'],
+            'CASE-021' => ['digitalforensics', 'APT timeline and attack reconstruction'],
+            'CASE-022' => ['corporatefinance', 'Multi-hop money laundering trails'],
+            'CASE-023' => ['digitalforensics', 'System logs and security events'],
+            'CASE-024' => ['employeeportal', 'Manager self-approvals and access abuse'],
+            'CASE-025' => ['digitalforensics', 'Data exfiltration methods and totals'],
+            'CASE-026' => ['corporatefinance', 'Phantom transactions and fraud patterns'],
+            'CASE-027' => ['employeeportal', 'Concurrent sessions and identity theft'],
+            'CASE-028' => ['digitalforensics', 'Info leaks and email-file correlations'],
+            'CASE-029' => ['digitalforensics', 'Log integrity and tampering detection'],
+            'CASE-030' => ['corporatefinance', 'Cross-database correlation and mastermind identification'],
         ];
 
         $caseMap = [];
@@ -543,9 +543,9 @@ class DatabaseSeeder
         }
 
         $descriptions = [
-            'corporate_finance' => 'Financial database containing employee records, transactions, bank accounts, and audit logs',
-            'digital_forensics' => 'Forensic database with user activities, files, network logs, emails, and system events',
-            'employee_portal' => 'Employee portal database with access logs, permission changes, and audit trails',
+            'corporatefinance' => 'Financial database containing employee records, transactions, bank accounts, and audit logs',
+            'digitalforensics' => 'Forensic database with user activities, files, network logs, emails, and system events',
+            'employeeportal' => 'Employee portal database with access logs, permission changes, and audit trails',
         ];
 
         foreach ($caseDbMap as $caseCode => [$dbName, $description]) {
@@ -572,9 +572,9 @@ class DatabaseSeeder
         $pdo = new PDO($dsn, $conn['username'], $conn['password'], $conn['options'] ?? []);
 
         $dbMap = [
-            'corporate_finance' => base_path('database/investigation_databases/case_001'),
-            'digital_forensics' => base_path('database/investigation_databases/case_002'),
-            'employee_portal'   => base_path('database/investigation_databases/case_003'),
+            'corporatefinance' => base_path('database/investigation_databases/case_001'),
+            'digitalforensics' => base_path('database/investigation_databases/case_002'),
+            'employeeportal'   => base_path('database/investigation_databases/case_003'),
         ];
 
         foreach ($dbMap as $dbName => $dir) {

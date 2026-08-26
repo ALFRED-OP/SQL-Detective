@@ -595,7 +595,7 @@ CASE #001
 THE MISSING MILLION
 
 DATABASE
-└── corporate_finance
+└── corporatefinance
     ├── employees
     ├── departments
     ├── transactions
@@ -2212,7 +2212,7 @@ APP_ENV=production
 APP_DEBUG=false
 
 DB_HOST=localhost
-DB_NAME=sql_detective
+DB_NAME=sqldetective
 DB_USER=
 DB_PASSWORD=
 

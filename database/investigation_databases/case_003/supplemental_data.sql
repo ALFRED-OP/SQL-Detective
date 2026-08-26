@@ -1,7 +1,7 @@
--- Supplemental seed data for employee_portal investigation database
+-- Supplemental seed data for employeeportal investigation database
 -- Supports cases 006, 009, 015, 019, 024, 027
 
-USE `employee_portal`;
+USE `employeeportal`;
 
 -- ============================================================
 -- CASE-006: The Missing Records

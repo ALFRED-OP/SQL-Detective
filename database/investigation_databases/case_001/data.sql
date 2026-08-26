@@ -1,4 +1,4 @@
-USE `corporate_finance`;
+USE `corporatefinance`;
 
 -- Seed departments
 INSERT INTO `departments` (`id`, `name`, `code`, `description`, `budget`) VALUES
@@ -125,25 +125,25 @@ INSERT INTO `login_logs` (`employee_id`, `login_time`, `logout_time`, `ip_addres
 INSERT INTO `access_logs` (`employee_id`, `resource_type`, `resource_name`, `action`, `access_time`, `ip_address`, `device_id`, `location_id`, `success`) VALUES
 -- Sunita Reddy accessing finance system
 (5, 'system', 'Finance Management System', 'read', '2026-08-05 01:55:00', '203.0.113.42', 'DEV-UNKNOWN-001', 5, TRUE),
-(5, 'database', 'corporate_finance', 'read', '2026-08-05 01:57:00', '203.0.113.42', 'DEV-UNKNOWN-001', 5, TRUE),
-(5, 'database', 'corporate_finance', 'write', '2026-08-05 02:00:00', '203.0.113.42', 'DEV-UNKNOWN-001', 5, TRUE),
+(5, 'database', 'corporatefinance', 'read', '2026-08-05 01:57:00', '203.0.113.42', 'DEV-UNKNOWN-001', 5, TRUE),
+(5, 'database', 'corporatefinance', 'write', '2026-08-05 02:00:00', '203.0.113.42', 'DEV-UNKNOWN-001', 5, TRUE),
 (5, 'system', 'Finance Management System', 'read', '2026-08-07 02:15:00', '203.0.113.42', 'DEV-UNKNOWN-001', 5, TRUE),
-(5, 'database', 'corporate_finance', 'write', '2026-08-07 02:18:00', '203.0.113.42', 'DEV-UNKNOWN-001', 5, TRUE),
+(5, 'database', 'corporatefinance', 'write', '2026-08-07 02:18:00', '203.0.113.42', 'DEV-UNKNOWN-001', 5, TRUE),
 (5, 'system', 'Finance Management System', 'read', '2026-08-10 02:30:00', '198.51.100.15', 'DEV-UNKNOWN-001', 5, TRUE),
-(5, 'database', 'corporate_finance', 'write', '2026-08-10 02:33:00', '198.51.100.15', 'DEV-UNKNOWN-001', 5, TRUE),
+(5, 'database', 'corporatefinance', 'write', '2026-08-10 02:33:00', '198.51.100.15', 'DEV-UNKNOWN-001', 5, TRUE),
 (5, 'system', 'Finance Management System', 'read', '2026-08-12 01:45:00', '198.51.100.15', 'DEV-UNKNOWN-001', 5, TRUE),
-(5, 'database', 'corporate_finance', 'write', '2026-08-12 01:48:00', '198.51.100.15', 'DEV-UNKNOWN-001', 5, TRUE),
+(5, 'database', 'corporatefinance', 'write', '2026-08-12 01:48:00', '198.51.100.15', 'DEV-UNKNOWN-001', 5, TRUE),
 (5, 'system', 'Finance Management System', 'read', '2026-08-15 02:05:00', '203.0.113.42', 'DEV-UNKNOWN-001', 5, TRUE),
-(5, 'database', 'corporate_finance', 'write', '2026-08-15 02:08:00', '203.0.113.42', 'DEV-UNKNOWN-001', 5, TRUE),
+(5, 'database', 'corporatefinance', 'write', '2026-08-15 02:08:00', '203.0.113.42', 'DEV-UNKNOWN-001', 5, TRUE),
 -- Normal access
 (5, 'system', 'Finance Management System', 'read', '2026-08-01 09:05:00', '192.168.1.47', 'DEV-LAPTOP-004', 1, TRUE),
-(5, 'database', 'corporate_finance', 'read', '2026-08-01 09:10:00', '192.168.1.47', 'DEV-LAPTOP-004', 1, TRUE),
+(5, 'database', 'corporatefinance', 'read', '2026-08-01 09:10:00', '192.168.1.47', 'DEV-LAPTOP-004', 1, TRUE),
 (5, 'file', 'monthly_report_aug.xlsx', 'read', '2026-08-01 14:30:00', '192.168.1.47', 'DEV-LAPTOP-004', 1, TRUE),
 -- Others normal
 (3, 'system', 'Finance Management System', 'read', '2026-08-01 09:05:00', '192.168.1.45', 'DEV-LAPTOP-002', 1, TRUE),
-(3, 'database', 'corporate_finance', 'read', '2026-08-01 09:10:00', '192.168.1.45', 'DEV-LAPTOP-002', 1, TRUE),
+(3, 'database', 'corporatefinance', 'read', '2026-08-01 09:10:00', '192.168.1.45', 'DEV-LAPTOP-002', 1, TRUE),
 (4, 'system', 'Finance Management System', 'read', '2026-08-01 09:20:00', '192.168.1.46', 'DEV-LAPTOP-003', 1, TRUE),
-(4, 'database', 'corporate_finance', 'read', '2026-08-01 09:25:00', '192.168.1.46', 'DEV-LAPTOP-003', 1, TRUE);
+(4, 'database', 'corporatefinance', 'read', '2026-08-01 09:25:00', '192.168.1.46', 'DEV-LAPTOP-003', 1, TRUE);
 
 -- Transaction audit logs
 INSERT INTO `transaction_audit` (`transaction_id`, `action`, `performed_by`, `new_values`, `notes`) VALUES

@@ -71,9 +71,9 @@ Build a complete "SQL Detective" web application — an interactive database inv
 
 ### Investigation Database Data (ALL 30 CASES COMPLETE)
 - All 30 cases share 3 investigation databases:
-  - `corporate_finance` (cases 001, 004, 007, 010, 013, 017, 020, 022, 026, 030)
-  - `digital_forensics` (cases 002, 005, 008, 011, 012, 014, 016, 018, 021, 023, 025, 028, 029)
-  - `employee_portal` (cases 003, 006, 009, 015, 019, 024, 027)
+  - `corporatefinance` (cases 001, 004, 007, 010, 013, 017, 020, 022, 026, 030)
+  - `digitalforensics` (cases 002, 005, 008, 011, 012, 014, 016, 018, 021, 023, 025, 028, 029)
+  - `employeeportal` (cases 003, 006, 009, 015, 019, 024, 027)
 - Each DB has `schema.sql` + `data.sql` (base data) + `supplemental_data.sql` (data for additional cases)
 
 ### Documentation (COMPLETE — Updated for Plain PHP)
