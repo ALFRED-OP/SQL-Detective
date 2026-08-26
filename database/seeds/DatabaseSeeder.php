@@ -571,7 +571,8 @@ class DatabaseSeeder
         $rootUser = env('DB_ROOT_USER', $conn['username']);
         $rootPass = env('DB_ROOT_PASSWORD', $conn['password']);
         $dsn = "{$conn['driver']}:host={$conn['host']};port={$conn['port']};charset={$conn['charset']}";
-        $pdo = new PDO($dsn, $rootUser, $rootPass, $conn['options'] ?? []);
+        $pdo = new PDO($dsn, $rootUser, $rootPass);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         $dbMap = [
             'corporatefinance' => base_path('database/investigation_databases/case_001'),

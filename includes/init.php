@@ -71,7 +71,5 @@ set_error_handler(function($severity, $message, $file, $line) {
 
 require_once PROJECT_ROOT . '/includes/db.php';
 require_once PROJECT_ROOT . '/includes/csrf.php';
-db_connect();
-investigation_db_connect();
 
 csrf_check();
