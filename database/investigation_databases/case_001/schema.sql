@@ -38,6 +38,21 @@ CREATE TABLE `employees` (
     INDEX `idx_manager` (`manager_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Locations table
+CREATE TABLE `locations` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `name` VARCHAR(100) NOT NULL,
+    `address` TEXT,
+    `city` VARCHAR(50),
+    `state` VARCHAR(50),
+    `country` VARCHAR(50) DEFAULT 'India',
+    `ip_range_start` VARCHAR(45),
+    `ip_range_end` VARCHAR(45),
+    `timezone` VARCHAR(50) DEFAULT 'Asia/Kolkata',
+    `is_office` BOOLEAN DEFAULT FALSE,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Bank accounts table
 CREATE TABLE `bank_accounts` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -149,21 +164,6 @@ CREATE TABLE `devices` (
     FOREIGN KEY (`employee_id`) REFERENCES `employees`(`id`),
     INDEX `idx_employee` (`employee_id`),
     INDEX `idx_status` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Locations table
-CREATE TABLE `locations` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(100) NOT NULL,
-    `address` TEXT,
-    `city` VARCHAR(50),
-    `state` VARCHAR(50),
-    `country` VARCHAR(50) DEFAULT 'India',
-    `ip_range_start` VARCHAR(45),
-    `ip_range_end` VARCHAR(45),
-    `timezone` VARCHAR(50) DEFAULT 'Asia/Kolkata',
-    `is_office` BOOLEAN DEFAULT FALSE,
-    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Audit logs for transactions

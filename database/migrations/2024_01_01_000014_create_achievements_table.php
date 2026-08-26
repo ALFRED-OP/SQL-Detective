@@ -16,7 +16,7 @@ class CreateAchievementsTable
                 name VARCHAR(100) NOT NULL UNIQUE,
                 description TEXT NOT NULL,
                 icon VARCHAR(100) NOT NULL,
-                requirement_type ENUM('cases_completed', 'challenges_solved', 'perfect_cases', 'no_hints', 'speed', 'streak', 'xp_milestone', 'level_milestone', 'explorer', 'first_case') NOT NULL,
+                requirement_type ENUM('cases_completed', 'challenges_solved', 'perfect_cases', 'no_hints', 'speed', 'streak', 'xp_milestone', 'level_milestone', 'explorer', 'first_case', 'difficulty_complete', 'total_queries') NOT NULL,
                 requirement_value INT UNSIGNED NOT NULL DEFAULT 1,
                 xp_reward INT UNSIGNED NOT NULL DEFAULT 0,
                 is_secret BOOLEAN NOT NULL DEFAULT FALSE,

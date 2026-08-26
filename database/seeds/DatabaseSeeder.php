@@ -568,8 +568,10 @@ class DatabaseSeeder
     {
         $config = require base_path('config/database.php');
         $conn = $config['connections'][$config['default']];
+        $rootUser = env('DB_ROOT_USER', $conn['username']);
+        $rootPass = env('DB_ROOT_PASSWORD', $conn['password']);
         $dsn = "{$conn['driver']}:host={$conn['host']};port={$conn['port']};charset={$conn['charset']}";
-        $pdo = new PDO($dsn, $conn['username'], $conn['password'], $conn['options'] ?? []);
+        $pdo = new PDO($dsn, $rootUser, $rootPass, $conn['options'] ?? []);
 
         $dbMap = [
             'corporatefinance' => base_path('database/investigation_databases/case_001'),
@@ -578,6 +580,7 @@ class DatabaseSeeder
         ];
 
         foreach ($dbMap as $dbName => $dir) {
+            $pdo->exec("DROP DATABASE IF EXISTS `" . $dbName . "`");
             $pdo->exec("CREATE DATABASE IF NOT EXISTS `" . $dbName . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
             $pdo->exec("USE `" . $dbName . "`");
 
