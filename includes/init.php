@@ -70,6 +70,7 @@ set_error_handler(function($severity, $message, $file, $line) {
 });
 
 require_once PROJECT_ROOT . '/includes/db.php';
+require_once PROJECT_ROOT . '/includes/validator.php';
 require_once PROJECT_ROOT . '/includes/csrf.php';
 
 csrf_check();

@@ -11,6 +11,7 @@ function db_connect() {
         $options[PDO::MYSQL_ATTR_SSL_CA] = $sslCa;
     }
     $pdo = new PDO($dsn, $config['username'], $config['password'], $options);
+    $pdo->exec("SET SESSION sql_mode = (SELECT REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', ''))");
     return $pdo;
 }
 
@@ -20,6 +21,7 @@ function investigation_db_connect() {
     $config = config('database.connections.investigation');
     $dsn = "{$config['driver']}:host={$config['host']};port={$config['port']};charset={$config['charset']}";
     $pdo = new PDO($dsn, $config['username'], $config['password'], $config['options'] ?? []);
+    $pdo->exec("SET SESSION sql_mode = (SELECT REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', ''))");
     return $pdo;
 }
 

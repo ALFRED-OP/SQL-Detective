@@ -28,7 +28,7 @@ function dashboard_index() {
     $stmt->execute([$userId]);
     $recentAchievements = $stmt->fetchAll();
     
-    $stmt = $db->prepare("SELECT COUNT(*) + 1 as rank FROM users WHERE xp > ? AND status = 'active'");
+    $stmt = $db->prepare("SELECT COUNT(*) + 1 as `rank` FROM users WHERE xp > ? AND status = 'active'");
     $stmt->execute([$user['xp']]);
     $leaderboardPos = $stmt->fetchColumn();
     

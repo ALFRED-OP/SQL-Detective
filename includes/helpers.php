@@ -44,11 +44,12 @@ function base_path(string $path = ''): string {
 
 function view(string $name, array $data = []): void {
     extract($data, EXTR_SKIP);
-    $viewFile = PROJECT_ROOT . "/views/{$name}.php";
+    $viewPath = str_replace('.', '/', $name);
+    $viewFile = PROJECT_ROOT . "/views/{$viewPath}.php";
     if (!file_exists($viewFile)) {
         abort(404, "View [{$name}] not found.");
     }
-    if (strpos($name, 'layouts/') === 0 || strpos($name, 'errors/') === 0) {
+    if (strpos($viewPath, 'layouts/') === 0 || strpos($viewPath, 'errors/') === 0) {
         require $viewFile;
         return;
     }

@@ -40,16 +40,16 @@ INSERT INTO `emails` (`message_id`, `sender_id`, `recipient_ids`, `subject`, `bo
 ('EXT-2026-002', NULL, '[4, 5, 6, 7]', 'IT Security Alert - Account Compromised', 'We have detected unauthorized access to your account. Please verify your identity by providing your credentials at: http://10.0.2.103/security/login', '2026-08-10 09:15:00', 'inbox', 'urgent', FALSE, 2048),
 ('EXT-2026-003', NULL, '[8, 3, 1]', 'Monthly Payroll Statement - Action Required', 'Your salary slip for August 2026 is ready. Download from: http://payroll-corp.insecure-site.com/slip.php?id=42', '2026-08-11 10:00:00', 'inbox', 'high', TRUE, 51200),
 -- Phishing emails sent by compromised account
-(6, 6, '[3, 4, 5]', 'FW: Invoice Payment Urgently Needed', 'Please process the attached invoice for immediate payment. Account details: 9876543210, IFSC: UTIB0000001', '2026-08-12 10:30:00', 'sent', 'urgent', TRUE, 204800),
-(6, 6, '[1]', 'Re: Board Meeting Agenda - Confidential', 'Attached are the confidential board documents. Please review before Friday.', '2026-08-12 14:00:00', 'sent', 'urgent', TRUE, 5242880),
+('FWD-2026-000', 6, '[3, 4, 5]', 'FW: Invoice Payment Urgently Needed', 'Please process the attached invoice for immediate payment. Account details: 9876543210, IFSC: UTIB0000001', '2026-08-12 10:30:00', 'sent', 'urgent', TRUE, 204800),
+('FWD-2026-001', 6, '[1]', 'Re: Board Meeting Agenda - Confidential', 'Attached are the confidential board documents. Please review before Friday.', '2026-08-12 14:00:00', 'sent', 'urgent', TRUE, 5242880),
 -- More external phishing attempts
 ('EXT-2026-004', NULL, '[2, 6, 8]', 'Claim Your Festival Bonus Now!', 'Congratulations! You have been selected for a special festival bonus. Verify your bank details at: http://bonus-festival.linkedaccount.com/claim', '2026-08-13 11:00:00', 'inbox', 'normal', FALSE, 4096),
 ('EXT-2026-005', NULL, '[9, 10]', 'System Upgrade Required - Login Required', 'Our systems have been upgraded. All users must re-authenticate at: http://portal-corp-update.xyz/auth', '2026-08-14 09:00:00', 'inbox', 'high', FALSE, 1024),
 -- Legitimate emails (noise)
-(1, 1, '[3, 4, 5]', 'Q3 Budget Review Meeting', 'Hi team, please review the Q3 budget documents before our meeting on Friday.', '2026-08-15 14:00:00', 'sent', 'normal', TRUE, 2048000),
-(2, 5, '[3]', 'Employee Survey Results', 'Hi Amit, here are the survey results for your department.', '2026-08-13 16:00:00', 'sent', 'normal', FALSE, 8192),
-(4, 2, '[5, 6, 7]', 'Security Policy Update', 'Please review the updated security policy document.', '2026-08-14 11:00:00', 'sent', 'high', FALSE, 4096),
-(8, 8, '[4]', 'Code Review Request', 'Can you review my pull request when you get a chance?', '2026-08-15 10:00:00', 'sent', 'normal', FALSE, 2048);
+('MSG-2026-008', 1, '[3, 4, 5]', 'Q3 Budget Review Meeting', 'Hi team, please review the Q3 budget documents before our meeting on Friday.', '2026-08-15 14:00:00', 'sent', 'normal', TRUE, 2048000),
+('MSG-2026-009', 5, '[3]', 'Employee Survey Results', 'Hi Amit, here are the survey results for your department.', '2026-08-13 16:00:00', 'sent', 'normal', FALSE, 8192),
+('MSG-2026-010', 2, '[5, 6, 7]', 'Security Policy Update', 'Please review the updated security policy document.', '2026-08-14 11:00:00', 'sent', 'high', FALSE, 4096),
+('MSG-2026-011', 8, '[4]', 'Code Review Request', 'Can you review my pull request when you get a chance?', '2026-08-15 10:00:00', 'sent', 'normal', FALSE, 2048);
 
 -- ============================================================
 -- CASE-011: Insider Trading Ring
