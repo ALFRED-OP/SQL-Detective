@@ -19,28 +19,24 @@ An interactive database investigation game designed around SQL, relational datab
 
 ## Tech Stack
 
-- **Backend**: PHP 8.1+ (no framework, pure MVC)
+- **Backend**: PHP 8.1+ (plain PHP, zero external dependencies)
 - **Database**: MySQL/MariaDB
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6+)
-- **Routing**: FastRoute
-- **HTTP**: Laminas Diactoros
-- **Environment**: vlucas/phpdotenv
+- **Server**: Apache with mod_rewrite or Nginx with try_files
 
 ## Requirements
 
 - PHP 8.1+
 - MySQL 8.0+ or MariaDB 10.5+
-- Composer 2.x
 - Web server (Nginx/Apache) with PHP-FPM
 
 ## Installation
 
-### 1. Clone and Install Dependencies
+### 1. Clone Repository
 
 ```bash
 git clone <repository-url>
 cd SQL-Detective
-composer install
 ```
 
 ### 2. Configure Environment
@@ -54,33 +50,41 @@ cp .env.example .env
 
 ```sql
 CREATE DATABASE sql_detective CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE DATABASE sql_detective_investigation CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE corporate_finance CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE digital_forensics CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE employee_portal CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- Create read-only user for investigation queries
-CREATE USER 'investigation_readonly'@'localhost' IDENTIFIED BY 'secure_password';
-GRANT SELECT ON sql_detective_investigation.* TO 'investigation_readonly'@'localhost';
+-- Create app user (full access for seeding, restrict after)
+CREATE USER 'sql_detective_app'@'localhost' IDENTIFIED BY 'secure_password';
+GRANT ALL PRIVILEGES ON sql_detective.* TO 'sql_detective_app'@'localhost';
+GRANT ALL PRIVILEGES ON corporate_finance.* TO 'sql_detective_app'@'localhost';
+GRANT ALL PRIVILEGES ON digital_forensics.* TO 'sql_detective_app'@'localhost';
+GRANT ALL PRIVILEGES ON employee_portal.* TO 'sql_detective_app'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-### 4. Run Migrations
+### 4. Run Setup
 
 ```bash
-php artisan migrate
+php setup.php setup
 ```
 
-### 5. Seed Database
+This runs migrations and seeds all 30 cases, challenges, suspects, evidence, and achievements.
 
-```bash
-php artisan db:seed
+### 5. Secure Investigation Databases (Post-Setup)
+
+```sql
+-- Revoke write access on investigation DBs
+REVOKE ALL PRIVILEGES ON corporate_finance.* FROM 'sql_detective_app'@'localhost';
+REVOKE ALL PRIVILEGES ON digital_forensics.* FROM 'sql_detective_app'@'localhost';
+REVOKE ALL PRIVILEGES ON employee_portal.* FROM 'sql_detective_app'@'localhost';
+GRANT SELECT ON corporate_finance.* TO 'sql_detective_app'@'localhost';
+GRANT SELECT ON digital_forensics.* TO 'sql_detective_app'@'localhost';
+GRANT SELECT ON employee_portal.* TO 'sql_detective_app'@'localhost';
+FLUSH PRIVILEGES;
 ```
 
-### 6. Generate Application Key
-
-```bash
-php artisan key:generate
-```
-
-### 7. Configure Web Server
+### 6. Configure Web Server
 
 **Nginx (recommended):**
 
@@ -138,61 +142,72 @@ After seeding:
 
 ```
 sql-detective/
-├── app/
-│   ├── Controllers/     # HTTP Controllers
-│   ├── Models/          # Data Models
-│   ├── Services/        # Business Logic
-│   ├── Repositories/    # Data Access
-│   ├── Middleware/      # HTTP Middleware
-│   ├── Validators/      # Input Validation
-│   ├── Helpers/         # Global Helpers
-│   └── Core/            # Core Classes
-├── config/              # Configuration Files
 ├── public/              # Web Root
-│   ├── assets/          # CSS, JS, Images
-│   └── index.php        # Entry Point
-├── routes/              # Route Definitions
-├── views/               # Blade-style Templates
+│   ├── index.php        # Front Controller (all routing)
+│   ├── .htaccess        # URL Rewriting
+│   └── assets/          # CSS, JS, Images
+├── includes/            # Core Functions & Config
+│   ├── init.php         # Bootstrap (env, session, DB)
+│   ├── helpers.php      # Global Helper Functions
+│   ├── db.php           # Database Connections
+│   ├── auth.php         # Authentication Middleware
+│   ├── csrf.php         # CSRF Protection
+│   ├── rate_limit.php   # Rate Limiting
+│   ├── validator.php    # Input Validation
+│   ├── query_validator.php  # SQL Query Safety
+│   ├── challenge_validator.php  # Challenge Validation
+│   └── game.php         # XP, Levels, Achievements
+├── controllers/         # Request Handlers (plain functions)
+│   ├── home.php
+│   ├── auth.php
+│   ├── dashboard.php
+│   ├── cases.php
+│   ├── detective.php
+│   ├── profile.php
+│   ├── leaderboard.php
+│   ├── achievements.php
+│   ├── admin.php
+│   └── api.php
+├── views/               # PHP Templates
+│   ├── layouts/app.php  # Main Layout
+│   └── ...              # View Files
+├── config/              # Configuration Files
 ├── database/
 │   ├── migrations/      # Schema Migrations
-│   ├── seeds/           # Seed Data
-│   └── investigation_databases/  # Case Databases
-├── storage/             # Logs, Cache
+│   ├── seeds/           # Seed Data (30 cases)
+│   └── investigation_databases/  # Case DB Schemas
+├── storage/             # Logs, Sessions, Cache
+├── setup.php            # CLI Setup (replaces artisan)
 ├── tests/               # PHPUnit Tests
 └── docs/                # Documentation
 ```
 
 ## Security Features
 
-- **SQL Injection Prevention**: PDO prepared statements, query validation, read-only investigation DB user
-- **XSS Protection**: Output escaping, CSP headers
+- **SQL Injection Prevention**: PDO prepared statements, query validation, separate read-only investigation DB user
+- **XSS Protection**: Output escaping via `e()`, CSP headers
 - **CSRF Protection**: Token validation on all state-changing requests
-- **Rate Limiting**: Login, query execution, challenge submissions
+- **Rate Limiting**: Login, query execution, challenge submissions (file-based)
 - **Session Security**: HttpOnly, Secure, SameSite cookies; regeneration on login
-- **Password Security**: bcrypt with cost 12
+- **Password Security**: bcrypt with configurable cost
 - **Audit Logging**: Authentication events, suspicious activity
-- **Anti-Cheat**: Server-side game state validation
+- **Anti-Cheat**: Server-side game state validation, separate investigation DBs
 
 ## Development
 
 ### Run Tests
 
 ```bash
-composer test
+php tests/run.php
 ```
 
-### Code Style
+### Setup Commands
 
 ```bash
-composer cs        # Check
-composer cs:fix    # Fix
-```
-
-### Create Migration
-
-```bash
-# Create file in database/migrations/ with timestamp prefix
-# e.g., 2024_01_15_120000_create_new_table.php
+php setup.php migrate       # Run pending migrations
+php setup.php seed          # Seed the database
+php setup.php setup         # Migrate + Seed
+php setup.php migrate:fresh # Drop all tables and re-run
 ```
 
 ## Deployment
@@ -239,7 +254,7 @@ MIT License - See LICENSE file for details.
 ## Academic Use
 
 This project is designed to meet NIELIT A-Level Major Project requirements. The codebase demonstrates:
-- MVC Architecture
+- Front Controller Architecture (single entry point)
 - Database Normalization (1NF, 2NF, 3NF)
 - Relational Database Design
 - CRUD Operations
@@ -252,6 +267,7 @@ This project is designed to meet NIELIT A-Level Major Project requirements. The 
 - REST-style API Endpoints
 - Database Transactions
 - Access Control
+- Zero External Dependencies
 
 ---
 

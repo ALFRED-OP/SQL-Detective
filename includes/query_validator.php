@@ -1,7 +1,5 @@
 <?php
 
-namespace App\Services;
-
 class QueryValidator
 {
     private array $allowedStatements;

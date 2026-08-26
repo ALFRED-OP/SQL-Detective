@@ -1,6 +1,6 @@
 # SQL Detective — API Reference
 
-All API endpoints require authentication and CSRF tokens unless noted.
+All API endpoints are routed through `public/index.php` and handled by `controllers/api.php`. All endpoints require authentication and CSRF tokens unless noted.
 
 ## Query Execution
 

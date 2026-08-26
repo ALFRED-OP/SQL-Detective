@@ -1,7 +1,5 @@
 <?php
 
-namespace App\Validators;
-
 class Validator
 {
     private array $data;
@@ -179,15 +177,15 @@ class Validator
         $table = $params[0] ?? $field;
         $column = $params[1] ?? $field;
         $exceptId = $params[2] ?? null;
-        $db = \App\Core\Application::getInstance()->db();
+        $db = db();
         $sql = "SELECT COUNT(*) FROM $table WHERE $column = ?";
-        $params = [$value];
+        $queryParams = [$value];
         if ($exceptId) {
             $sql .= " AND id != ?";
-            $params[] = $exceptId;
+            $queryParams[] = $exceptId;
         }
         $stmt = $db->prepare($sql);
-        $stmt->execute($params);
+        $stmt->execute($queryParams);
         return $stmt->fetchColumn() === 0;
     }
 
@@ -196,7 +194,7 @@ class Validator
         if ($value === null || $value === '') return true;
         $table = $params[0] ?? $field;
         $column = $params[1] ?? 'id';
-        $db = \App\Core\Application::getInstance()->db();
+        $db = db();
         $sql = "SELECT COUNT(*) FROM $table WHERE $column = ?";
         $stmt = $db->prepare($sql);
         $stmt->execute([$value]);

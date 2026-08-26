@@ -2,42 +2,55 @@
 
 ## Overview
 
-SQL Detective follows the MVC (Model-View-Controller) pattern with a custom PHP framework. No heavy frameworks — everything is hand-built for learning and performance.
+SQL Detective is built with plain PHP — no framework, no Composer dependencies, no classes except validators. Everything is functions, arrays, and simple PHP templates.
 
 ## Directory Structure
 
 ```
 sql-detective/
-├── app/
-│   ├── Controllers/       # Request handlers
-│   ├── Core/              # Framework core (Application, Router, View, Migration)
-│   ├── Helpers/           # Utility functions
-│   ├── Middleware/         # Request middleware (Auth, CSRF, Rate Limit)
-│   ├── Models/            # Database models (base + specific)
-│   ├── Services/          # Business logic (QueryValidator, ChallengeValidator)
-│   └── Validators/        # Input validation
 ├── config/                # Configuration files
 │   ├── app.php            # App settings (name, URL, debug)
 │   ├── database.php       # Database connections
 │   └── security.php       # Security settings (CSRF, rate limits)
+├── controllers/           # Plain PHP function files
+│   ├── home.php           # Home page
+│   ├── auth.php           # Login, register, logout
+│   ├── dashboard.php      # User dashboard
+│   ├── cases.php          # Case listing and details
+│   ├── detective.php      # SQL workspace
+│   ├── profile.php        # User profile
+│   ├── leaderboard.php    # Rankings
+│   ├── achievements.php   # Achievements display
+│   ├── admin.php          # Admin panel
+│   └── api.php            # JSON API endpoints
 ├── database/
 │   ├── migrations/        # Database schema (17 migration files)
 │   ├── seeds/             # Database seeders
 │   └── investigation_databases/  # Case-specific databases
 ├── docs/                  # Project documentation
+├── includes/              # Shared infrastructure
+│   ├── init.php           # Bootstrap, autoloading, session
+│   ├── helpers.php        # Utility functions (view, redirect, json, etc.)
+│   ├── db.php             # Database connection and query helpers
+│   ├── auth.php           # Authentication functions
+│   ├── csrf.php           # CSRF token generation and validation
+│   ├── rate_limit.php     # Rate limiting
+│   ├── validator.php      # Input validation
+│   ├── query_validator.php    # SQL query safety validation
+│   ├── challenge_validator.php # Challenge answer validation
+│   └── game.php           # XP, levels, achievements logic
 ├── public/                # Web root
 │   ├── .htaccess          # Apache URL rewriting
-│   ├── index.php          # Front controller
-│   └── assets/            # Static assets (CSS, JS)
-├── routes/
-│   └── web.php            # Route definitions
+│   ├── index.php          # Front controller (all routes)
+│   └── assets/            # Static assets (CSS, JS, images)
 ├── storage/               # Logs, cache, sessions
-└── views/                 # PHP templates
-    ├── layouts/           # Master layout
-    ├── admin/             # Admin panel views
-    ├── cases/             # Investigation case views
-    ├── detective/         # SQL workspace view
-    └── ...
+├── views/                 # PHP templates
+│   ├── layouts/           # Master layout (app.php)
+│   ├── admin/             # Admin panel views
+│   ├── cases/             # Investigation case views
+│   ├── detective/         # SQL workspace view
+│   └── ...
+└── setup.php              # CLI tool (migrate, seed, setup)
 ```
 
 ## Request Flow
@@ -45,21 +58,79 @@ sql-detective/
 ```
 HTTP Request
     ↓
-public/index.php (entry point)
+public/index.php (front controller — all routes)
     ↓
-Application::bootstrap()
+Route matching (if/else + regex on REQUEST_URI)
     ↓
-Router::dispatch() → matches route
+include controller file → call function
     ↓
-Middleware pipeline:
-  1. RateLimitMiddleware
-  2. CsrfMiddleware
-  3. AuthMiddleware / GuestMiddleware
+Business logic (includes/ helpers, validators)
     ↓
-Controller::action()
+View rendering (ob_start / view() helper / ob_get_clean)
     ↓
-View::render() → HTML response
+HTML response
 ```
+
+## Key Principles
+
+- **No namespaces, no autoloader** — everything is `require`'d via `includes/init.php`
+- **No classes except validators** — controllers are plain functions, config is arrays
+- **No Composer** — zero external dependencies
+- **No ORM** — raw PDO with prepared statements
+- **No template engine** — plain PHP with `ob_start()`/`ob_get_clean()` for layout wrapping
+
+## Routing
+
+All routes are defined in `public/index.php` using simple pattern matching:
+
+```php
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($uri === '/' && $method === 'GET') {
+    require CONTROLLERS_PATH . '/home.php';
+    home_page();
+} elseif (preg_match('#^/cases/(\d+)$#', $uri, $matches) && $method === 'GET') {
+    require CONTROLLERS_PATH . '/cases.php';
+    show_case($matches[1]);
+}
+// ... etc
+```
+
+## Controller Functions
+
+Controllers are plain PHP functions in separate files:
+
+```php
+// controllers/home.php
+function home_page() {
+    $user = current_user();
+    view('home', ['user' => $user]);
+}
+
+// controllers/cases.php
+function show_case($id) {
+    $case = db_query("SELECT * FROM cases WHERE id = ?", [$id])->fetch();
+    view('cases.show', ['case' => $case]);
+}
+```
+
+## View System
+
+Views are plain PHP templates with a layout wrapper:
+
+```php
+// Using the view() helper from includes/helpers.php
+view('cases.show', ['case' => $case]);
+
+// Inside view('cases.show'):
+// 1. ob_start()
+// 2. require views/cases/show.php
+// 3. $content = ob_get_clean()
+// 4. require views/layouts/app.php (which echoes $content)
+```
+
+Variables passed to `view()` are extracted into the template scope.
 
 ## Database Architecture
 
@@ -67,12 +138,12 @@ View::render() → HTML response
 
 1. **Application Database** (`sql_detective`)
    - Stores users, cases, challenges, achievements, progress
-   - Connected via `DB_USERNAME` env variable
+   - Connected via `DB_*` env variables
    - Full CRUD permissions
 
 2. **Investigation Databases** (`corporate_finance`, `digital_forensics`, `employee_portal`)
    - Read-only databases that players query
-   - Connected via `INV_DB_USERNAME` env variable
+   - Connected via `DB_INVESTIGATION_*` env variables
    - SELECT-only permissions
    - **Player queries NEVER execute against the application database**
 
@@ -92,7 +163,7 @@ Result returned to player
 
 ## Key Components
 
-### QueryValidator
+### QueryValidator (`includes/query_validator.php`)
 - Validates SQL queries for safety
 - Blocks: DROP, DELETE, INSERT, UPDATE, ALTER, TRUNCATE, GRANT, etc.
 - Blocks: Subqueries, UNION-based injection attempts
@@ -100,19 +171,17 @@ Result returned to player
 - Max query length: 10,000 characters
 - Max execution time: 5 seconds
 
-### ChallengeValidator
+### ChallengeValidator (`includes/challenge_validator.php`)
 - Compares player query results against expected answers
 - Supports: exact match, row count, value check, column existence
 - Awards XP on correct answers
 - Manages achievement triggers
 - Tracks progress per user per case
 
-### Middleware Stack
-- **RateLimitMiddleware**: Limits requests per minute (configurable)
-- **CsrfMiddleware**: Validates CSRF tokens on POST/PUT/DELETE
-- **AuthMiddleware**: Requires authenticated session
-- **GuestMiddleware**: Redirects authenticated users away from login/register
-- **AdminMiddleware**: Requires admin role
+### Security Functions (`includes/csrf.php`, `includes/rate_limit.php`)
+- CSRF token generation and validation on all POST/PUT/DELETE requests
+- Rate limiting per IP/endpoint
+- Session security
 
 ## CSS Architecture
 
@@ -129,4 +198,3 @@ Result returned to player
   - `app.js` — Global functionality (theme, menu, AJAX forms)
   - `detective.js` — SQL workspace (editor, execution, schema)
   - `admin.js` — Admin panel (confirmations, inline editing)
-- Page-specific scripts loaded via `$extraScripts` in layout

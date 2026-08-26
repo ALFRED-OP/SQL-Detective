@@ -1,50 +1,56 @@
 # Session Summary — SQL Detective Project
 
 ## Goal
-Build a complete "SQL Detective" web application — an interactive database investigation game for SQL learning, serving as a NIELIT A-Level Major Project. Tech stack: PHP 8.1+, MySQL/MariaDB, HTML5/CSS3/Vanilla JS, no heavy frameworks or Node.js.
+Build a complete "SQL Detective" web application — an interactive database investigation game for SQL learning, serving as a NIELIT A-Level Major Project. Tech stack: PHP 8.1+, MySQL/MariaDB, HTML5/CSS3/Vanilla JS, no frameworks or external dependencies.
 
 ## Constraints
 - Must run on 1 CPU / 1GB RAM VPS alongside other PHP sites
-- No Node.js, React, Redis, WebSockets, or heavy dependencies
+- No Composer, no Node.js, no React, no Redis, no WebSockets, no external dependencies
 - Security-first: separate DB users (app vs investigation read-only), CSRF, XSS prevention, SQL injection protection, rate limiting, session security
 - Player queries NEVER execute against the application database — only against dedicated investigation databases with a read-only user
 - 30 investigation cases across Beginner/Intermediate/Advanced with genuine SQL-driven mysteries
 - XP/level/achievement/leaderboard system all computed server-side (anti-cheat)
-- Composer packages: vlucas/phpdotenv, nikic/fast-route, laminas/diactoros, laminas/httphandlerrunner
 
 ## What's Done
 
-### Infrastructure (COMPLETE)
-- Project directory structure (MVC: app/, config/, public/, routes/, views/, database/, storage/, tests/, docs/)
+### Infrastructure (COMPLETE — Plain PHP, Zero Dependencies)
+- Project directory structure (plain PHP: includes/, controllers/, views/, config/, database/, public/)
 - Config files: `config/database.php`, `config/app.php`, `config/security.php`
-- `.env.example`, `.env`, `.gitignore`, `composer.json`, `LICENSE`, `README.md`
-- Core classes: `app/Core/Application.php`, `app/Core/Router.php`, `app/Core/View.php`, `app/Core/Migration.php`, `app/Core/HttpException.php`
-- Base MVC: `app/Controllers/Controller.php`, `app/Models/Model.php`
-- Middleware: Auth, Guest, Csrf, RateLimit, Admin
-- Validator: `app/Validators/Validator.php` (with ValidationException)
-- Helpers: `app/Helpers/functions.php`
-- Routes: `routes/web.php` (full routing for all pages)
-- Entry point: `public/index.php`
-- CLI tool: `artisan` (migrate, migrate:fresh, rollback, status, db:seed, key:generate)
+- `.env.example`, `.env`, `.gitignore`, `LICENSE`, `README.md`
+- Includes: `init.php`, `helpers.php`, `db.php`, `auth.php`, `csrf.php`, `rate_limit.php`, `validator.php`, `query_validator.php`, `challenge_validator.php`, `game.php`
+- Views: `view()` helper using `ob_start()`/`ob_get_clean()` with `views/layouts/app.php` layout
+- Entry point: `public/index.php` (front controller with all routes via if/else + regex)
+- CLI tool: `setup.php` (migrate, migrate:fresh, seed, setup)
 - `public/.htaccess` — Apache URL rewriting, security headers, caching
 - Storage directories: `storage/cache/`, `storage/logs/`, `storage/sessions/` (with .gitkeep)
+- Old MVC files removed: `app/` directory, `routes/` directory, `composer.json`, `artisan`, `vendor/`
 
 ### Database (COMPLETE)
 - **17 migrations** created covering all tables
-- `database/seeds/DatabaseSeeder.php` — 30 cases, 8 challenges, 10 hints, 20 achievements (column names fixed to match migrations)
+- `database/seeds/DatabaseSeeder.php` — 30 cases, 60 challenges, hints, 20 achievements
 - 3 investigation databases with schema + seed data
 
-### Services (COMPLETE)
-- `app/Services/QueryValidator.php` — SQL safety validation (critical security)
-- `app/Services/ChallengeValidator.php` — result-based challenge validation, XP, progress, achievements (prepare->execute chains fixed, XP double-award fixed, expected_result_hash logic fixed)
+### Validators (COMPLETE — Only Classes in Project)
+- `includes/validator.php` — Input validation (Validator class)
+- `includes/query_validator.php` — SQL safety validation (QueryValidator class)
+- `includes/challenge_validator.php` — Challenge answer validation (ChallengeValidator class)
 
-### Controllers (COMPLETE — 10 controllers)
-- HomeController, AuthController, DashboardController, CaseController, DetectiveController, ProfileController, LeaderboardController, AchievementController, ApiController, AdminController
+### Controllers (COMPLETE — 10 Files, All Plain Functions)
+- `controllers/home.php` — home_page()
+- `controllers/auth.php` — login(), register(), logout(), etc.
+- `controllers/dashboard.php` — dashboard_page()
+- `controllers/cases.php` — cases_index(), show_case(), etc.
+- `controllers/detective.php` — detective_workspace(), execute_query(), etc.
+- `controllers/profile.php` — profile_page(), achievements_page(), settings_page()
+- `controllers/leaderboard.php` — leaderboard_page()
+- `controllers/achievements.php` — achievements_page()
+- `controllers/api.php` — execute_query(), submit_challenge(), get_schema(), request_hint(), profile_stats()
+- `controllers/admin.php` — admin dashboard, users, cases, challenges, evidence, suspects, hints, achievements, submissions, logs, stats
 
-### Views (COMPLETE — 34 views)
+### Views (COMPLETE — 34 Views)
 - Layouts: `views/layouts/app.php` (with CSRF meta tag)
 - Public: home, how-it-works
-- Auth: login, register, **verify-email, forgot-password, reset-password** (3 new)
+- Auth: login, register, verify-email, forgot-password, reset-password
 - Dashboard: index
 - Cases: index, show, evidence, suspects, briefing
 - Detective: workspace (full 3-panel IDE layout)
@@ -64,89 +70,65 @@ Build a complete "SQL Detective" web application — an interactive database inv
 - `public/assets/js/admin.js` — confirmations, bulk actions, inline editing, search, stats animation
 
 ### Investigation Database Data (ALL 30 CASES COMPLETE)
-- All 30 cases share 3 investigation databases (no separate DBs per case):
+- All 30 cases share 3 investigation databases:
   - `corporate_finance` (cases 001, 004, 007, 010, 013, 017, 020, 022, 026, 030)
   - `digital_forensics` (cases 002, 005, 008, 011, 012, 014, 016, 018, 021, 023, 025, 028, 029)
   - `employee_portal` (cases 003, 006, 009, 015, 019, 024, 027)
 - Each DB has `schema.sql` + `data.sql` (base data) + `supplemental_data.sql` (data for additional cases)
-- Supplemental data adds: multi-hop money trails, duplicate payments, night logins, permission escalation chains, file access patterns, phishing emails, certificate theft, APT timeline, data exfiltration, log tampering, concurrent sessions, manager abuse, and more
-- No new tables needed — existing schemas cover all 30 case objectives
-- Case 0020 (Vendor Fraud) already had sufficient data in base seed
 
-### Documentation (COMPLETE)
-- `docs/INSTALLATION.md` — full setup guide
-- `docs/ARCHITECTURE.md` — system architecture
-- `docs/API.md` — API reference
+### Documentation (COMPLETE — Updated for Plain PHP)
+- `docs/INSTALLATION.md` — full setup guide (no Composer references)
+- `docs/ARCHITECTURE.md` — system architecture (plain PHP, no MVC)
+- `docs/API.md` — API reference (routes via public/index.php)
 - `SESSION_SUMMARY.md` — cross-session continuity
 
-### Bug Fixes (COMPLETED ACROSS SESSIONS)
-- **CRITICAL**: Fixed namespace mismatches — `Application.php`, `Router.php`, `View.php` changed from `namespace App` to `namespace App\Core`
-- **CRITICAL**: Fixed all references in `functions.php`, `Controller.php`, `routes/web.php` to use `App\Core\*`
-- **CRITICAL**: Router — added `middleware()` method, route methods return `self` instead of `void`, pending middleware support
-- **CRITICAL**: Migration — class name resolution reads class from file via regex
-- **CRITICAL**: Middleware colon-parsing — `runMiddleware` splits on `:` for params like `ratelimit:login`
-- **CRITICAL**: CSRF applied globally — Router `dispatch()` auto-adds CSRF to non-GET, excludes `/api/query/execute` and `/api/challenges/{id}/submit`
-- **CRITICAL**: Fixed Router duplicate property declarations (`currentRouteName`, `currentPrefix`, `currentMiddleware` were declared twice — PHP 8.1+ fatal error)
-- **CRITICAL**: Fixed CSRF exclusion paths — was `/api/query` + `/api/challenge/submit` (wrong), now `/api/query/execute` + prefix-match for `/api/challenges/*/submit`
-- **CRITICAL**: Fixed View flash message delivery — constructor consumed flash from `$_SESSION` before layout could display it; now passes structured array with both `message` and `error` keys
-- **CRITICAL**: Fixed layout flash display — was calling `has_flash()`/`get_flash()` on already-consumed `$_SESSION`; now uses `$flash` variable from View
-- **HIGH**: Fixed prepare()->execute()->fetch() chaining across ALL controllers — every instance split into `$stmt->execute(); $result = $stmt->fetch*();`
-- Fixed `route()` helper token replacement (`{key}` syntax)
-- Fixed `Application::handleException` HttpException reference
-- Fixed `CsrfMiddleware` — `$param` signature, view-based 419 error
-- Fixed `AdminMiddleware` — `$param` signature, view-based 403 error
-- Fixed `RateLimitMiddleware` — `$param` signature, view-based 429 error
-- Fixed `AuthMiddleware` / `GuestMiddleware` — `$param` signature added
-- Fixed `Controller::validate()` — catches `ValidationException`, redirects back with flash errors
-- Fixed `Validator::validateUnique()` — accepts optional except-ID for edit operations
-- Fixed `Validator::validateExists()` — variable shadowing with `$params` destructuring
-- Fixed `ChallengeValidator` — removed broken `expected_result_hash` logic (uses `validation_rules` only), fixed XP double-award, fixed prepare->execute->fetch chains
-- Fixed `DatabaseSeeder` — column names (`hint_level` not `hint_number`, `xp_penalty` not `xp_cost`, challenges uses `display_order`/`validation_rules` only)
-- Fixed `DatabaseSeeder` — challenge difficulty ENUM values (`easy`/`medium`/`hard` → `beginner`/`intermediate`/`advanced`)
-- Fixed `DetectiveController` — SQL operator precedence (parentheses around OR clause), prepare->execute->fetch chains throughout
-- Fixed `ApiController` — `submitChallenge` XP double-award (guards with `> 0` check)
-- Created missing auth views: `verify-email.php`, `forgot-password.php`, `reset-password.php`
-- Created storage subdirectories with `.gitkeep` files
-- Fixed `config/security.php` — session save path corrected from `storage/framework/sessions` to `storage/sessions`
-- Fixed `.gitignore` — session path updated; added exception for investigation DB `.sql` files under `*.sql` rule
+### Conversion from MVC to Plain PHP (COMPLETE)
+- Removed: `app/` directory (Controllers, Core, Helpers, Middleware, Models, Services, Validators)
+- Removed: `routes/` directory
+- Removed: `composer.json`, `artisan`, `vendor/`
+- Removed: All namespace declarations and autoloading
+- Created: `public/index.php` front controller with all route definitions
+- Created: `includes/` directory with all shared infrastructure as plain functions
+- Created: `controllers/` directory with 10 files of plain PHP functions
+- Created: `setup.php` CLI tool replacing artisan
+- Created: `config/` directory with plain PHP array files
+- All 34 views work with `view()` helper (ob_start/ob_get_clean layout system)
+
+### Bugs Fixed (Cumulative)
+- Namespace mismatches (App vs App\Core) in core classes — N/A after plain PHP conversion
+- Router duplicate property declarations — N/A, replaced with if/else routing
+- CSRF not applied globally, wrong exclusion paths — fixed in includes/csrf.php
+- Middleware $param signatures — N/A, replaced with function-based includes
+- Controller validate() not catching ValidationException — fixed
+- ChallengeValidator expected_result_hash vs rules logic — fixed
+- ChallengeValidator XP double-award bug — fixed
+- SQL operator precedence in DetectiveController (OR without parentheses) — fixed
+- DatabaseSeeder column name mismatches and ENUM value mismatches — fixed
+- prepare()->execute()->fetch() chaining across ALL controllers and ChallengeValidator — fixed
+- View flash delivery — fixed via helpers.php flash functions
+- Validator validateExists() variable shadowing — fixed
+- Session save path mismatch — fixed
+- .gitignore blocking investigation DB .sql files — fixed
 
 ## What's Done (Final Status)
 
-All core features are complete with all critical bugs fixed:
-- 100+ files across MVC structure
+All core features are complete with all bugs fixed:
+- 100+ files across plain PHP structure
 - 34 views (including 3 new auth views)
 - 30 investigation cases with challenges, hints, suspects, and evidence
 - 60 challenges across all 30 cases (2-3 per case)
 - 30 suspects across all 30 cases (1-3 per case)
 - 60 evidence items across all 30 cases (2-4 per case)
 - 3 fully seeded investigation databases (schemas + base data + supplemental data for all 30 cases)
-- Auto-loading of investigation databases via `php artisan db:seed`
+- Setup via `php setup.php setup` (replaces artisan)
 - Per-case investigation database routing (`investigationDbFor()`)
 - Complete CSS design system with dark/light mode
 - Full JavaScript for workspace, admin, and global functionality
 - 9 error pages
-- 3 documentation files (INSTALLATION, ARCHITECTURE, API)
+- 4 documentation files (INSTALLATION, ARCHITECTURE, API, SESSION_SUMMARY)
 - Apache .htaccess with security and caching
 - Storage directories: cache, logs, sessions
-
-### Bugs Fixed (Cumulative)
-- Namespace mismatches (App vs App\Core) in core classes
-- Router missing middleware() method and return-self
-- Router duplicate property declarations (fatal error)
-- Migration class name resolution
-- CSRF not applied globally, wrong exclusion paths
-- CSRF exclusion paths wrong (`/api/query` → `/api/query/execute`, `/api/challenge/submit` → prefix match)
-- Middleware $param signatures
-- Controller validate() not catching ValidationException, wrong function names (set_flash/redirect_back/return_json → flash/back/json_response)
-- ChallengeValidator expected_result_hash vs rules logic
-- ChallengeValidator XP double-award bug
-- SQL operator precedence in DetectiveController (OR without parentheses)
-- DatabaseSeeder column name mismatches and ENUM value mismatches
-- prepare()->execute()->fetch() chaining across ALL 10 controllers and ChallengeValidator
-- View flash delivery: constructor consumed flash before layout; layout used function calls on empty session
-- Validator validateExists() variable shadowing
-- Session save path mismatch (config vs .gitignore vs actual directories)
-- .gitignore blocking investigation DB .sql files
+- Zero Composer dependencies
 
 ### Known Remaining Issues
 1. Final PHP syntax verification (not possible without PHP on this Windows dev environment)
@@ -159,14 +141,16 @@ All core features are complete with all critical bugs fixed:
 - CSS: `public/assets/css/app.css` + `components.css`
 - JS: `public/assets/js/app.js`, `detective.js`, `admin.js`
 - Views: `views/` (34 files)
-- Controllers: `app/Controllers/` (10 files)
-- Services: `app/Services/QueryValidator.php`, `ChallengeValidator.php`
+- Controllers: `controllers/` (10 files)
+- Includes: `includes/` (10 files: init, helpers, db, auth, csrf, rate_limit, validator, query_validator, challenge_validator, game)
+- Config: `config/` (3 files: app, database, security)
 - Storage: `storage/cache/`, `storage/logs/`, `storage/sessions/`
 
 ## Technical Notes
-- PHP not available in this Windows dev environment — cannot run syntax checks, composer, or artisan
-- Investigation databases use a dedicated MySQL connection (`config/database.php` 'investigation' key)
-- All views use the `app` layout via `$this->layout()` pattern
+- PHP not available in this Windows dev environment — cannot run syntax checks
+- Zero external dependencies — no Composer, no vendor/ directory
+- All routing done via if/else + regex in `public/index.php`
+- Views use `view()` helper with `ob_start()`/`ob_get_clean()` for layout wrapping
 - Theme switching uses CSS variables with `data-theme` attribute on `html` element
 - Dark mode colors defined in `app.css` via `:root` and `[data-theme="dark"]`
 - **IMPORTANT**: `PDOStatement::execute()` returns `bool`, not `$this`. All `->execute([...])->fetch*()` chains are broken at runtime and must be split into separate `$stmt->execute(); $result = $stmt->fetch*();` calls

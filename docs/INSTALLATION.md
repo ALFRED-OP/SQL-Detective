@@ -2,10 +2,9 @@
 
 ## Requirements
 
-- **PHP** 8.1 or higher
+- **PHP** 8.1 or higher (no Composer needed)
 - **MySQL** 8.0 or MariaDB 10.6+
 - **Apache** 2.4+ with `mod_rewrite` enabled
-- Composer (for dependency installation)
 
 ## Step 1: Clone the Repository
 
@@ -14,13 +13,7 @@ git clone https://github.com/your-org/sql-detective.git
 cd sql-detective
 ```
 
-## Step 2: Install Dependencies
-
-```bash
-composer install
-```
-
-## Step 3: Environment Configuration
+## Step 2: Environment Configuration
 
 ```bash
 cp .env.example .env
@@ -48,47 +41,24 @@ DB_INVESTIGATION_USER=sql_detective_readonly
 DB_INVESTIGATION_PASSWORD=readonly_password_here
 ```
 
-## Step 4: Generate Application Key
-
-```bash
-php artisan key:generate
-```
-
-## Step 5: Create Databases
-
-The seeder will automatically create and populate the investigation databases. However, the application user needs privileges on them:
+## Step 3: Create Databases
 
 ```sql
 CREATE DATABASE sql_detective CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE corporate_finance CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE digital_forensics CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE employee_portal CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
 
--- For initial seeding, grant the app user full access to investigation DBs
--- You can restrict to SELECT-only after seeding is complete
+## Step 4: Create Database Users
+
+```sql
+-- Application user (read/write for app tables, full access during seeding)
+CREATE USER 'sql_detective_user'@'localhost' IDENTIFIED BY 'your_secure_password';
+GRANT SELECT, INSERT, UPDATE, DELETE ON sql_detective.* TO 'sql_detective_user'@'localhost';
 GRANT ALL PRIVILEGES ON corporate_finance.* TO 'sql_detective_user'@'localhost';
 GRANT ALL PRIVILEGES ON digital_forensics.* TO 'sql_detective_user'@'localhost';
 GRANT ALL PRIVILEGES ON employee_portal.* TO 'sql_detective_user'@'localhost';
-FLUSH PRIVILEGES;
-```
-
-> **After seeding completes**, revoke write privileges and keep only SELECT for the app user:
-> ```sql
-> REVOKE ALL PRIVILEGES ON corporate_finance.* FROM 'sql_detective_user'@'localhost';
-> REVOKE ALL PRIVILEGES ON digital_forensics.* FROM 'sql_detective_user'@'localhost';
-> REVOKE ALL PRIVILEGES ON employee_portal.* FROM 'sql_detective_user'@'localhost';
-> GRANT SELECT ON corporate_finance.* TO 'sql_detective_user'@'localhost';
-> GRANT SELECT ON digital_forensics.* TO 'sql_detective_user'@'localhost';
-> GRANT SELECT ON employee_portal.* TO 'sql_detective_user'@'localhost';
-> FLUSH PRIVILEGES;
-> ```
-
-## Step 6: Create Database Users
-
-```sql
--- Application user (read/write for app tables only)
-CREATE USER 'sql_detective_user'@'localhost' IDENTIFIED BY 'your_secure_password';
-GRANT SELECT, INSERT, UPDATE, DELETE ON sql_detective.* TO 'sql_detective_user'@'localhost';
 
 -- Investigation user (read-only for investigation databases)
 CREATE USER 'sql_detective_readonly'@'localhost' IDENTIFIED BY 'readonly_password_here';
@@ -99,36 +69,24 @@ GRANT SELECT ON employee_portal.* TO 'sql_detective_readonly'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-## Step 7: Run Migrations
+## Step 5: Run Setup
 
 ```bash
-php artisan migrate
+php setup.php setup
 ```
 
-## Step 8: Seed Database
+This runs all migrations and seeds the database with users, 30 cases, 60 challenges, hints, achievements, and automatically creates + loads the investigation databases with schema and data.
 
-```bash
-php artisan db:seed
-```
+**Alternative commands:**
+- `php setup.php migrate` — Run migrations only
+- `php setup.php seed` — Run seeds only
+- `php setup.php migrate:fresh` — Drop all tables and re-run everything
 
-This seeds users, cases, challenges, hints, achievements, and automatically creates + loads the investigation databases (corporate_finance, digital_forensics, employee_portal) with schema, seed data, and supplemental data for all 30 cases.
+## Step 6: Configure Web Server
 
-## Step 9: Secure Investigation Databases
+Point your web server document root to the `public/` directory.
 
-After seeding completes successfully, revoke write privileges from the app user on investigation databases:
-
-```sql
-REVOKE ALL PRIVILEGES ON corporate_finance.* FROM 'sql_detective_user'@'localhost';
-REVOKE ALL PRIVILEGES ON digital_forensics.* FROM 'sql_detective_user'@'localhost';
-REVOKE ALL PRIVILEGES ON employee_portal.* FROM 'sql_detective_user'@'localhost';
-GRANT SELECT ON corporate_finance.* TO 'sql_detective_user'@'localhost';
-GRANT SELECT ON digital_forensics.* TO 'sql_detective_user'@'localhost';
-GRANT SELECT ON employee_portal.* TO 'sql_detective_user'@'localhost';
-FLUSH PRIVILEGES;
-```
-
-## Step 10: Configure Apache Virtual Host
-
+**Apache Virtual Host:**
 ```apache
 <VirtualHost *:80>
     ServerName sql-detective.local
@@ -144,9 +102,18 @@ FLUSH PRIVILEGES;
 </VirtualHost>
 ```
 
-## Step 11: Test the Application
+## Step 7: Set Permissions
 
-Visit `http://sql-detective.local` in your browser.
+Ensure the `storage/` directory is writable by the web server:
+
+```bash
+chmod -R 775 storage/
+chown -R www-data:www-data storage/
+```
+
+## Step 8: Verify Installation
+
+Visit `http://sql-detective.local/health` in your browser. You should see a JSON response confirming the application is running.
 
 ### Default Accounts
 
@@ -170,4 +137,4 @@ Visit `http://sql-detective.local` in your browser.
 ### Query Execution Fails
 - Verify the investigation database user has SELECT permission
 - Check that investigation database tables exist
-- Run `php artisan db:seed` if tables are empty
+- Run `php setup.php seed` if tables are empty

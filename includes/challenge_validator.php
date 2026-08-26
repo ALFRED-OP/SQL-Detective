@@ -1,35 +1,26 @@
 <?php
 
-namespace App\Services;
-
-use App\Core\Application;
-
 class ChallengeValidator
 {
-    private \PDO $db;
-
-    public function __construct()
-    {
-        $this->db = Application::getInstance()->db();
-    }
-
     public function validate(int $userId, int $challengeId, string $query): array
     {
-        $stmt = $this->db->prepare("SELECT * FROM challenges WHERE id = ?");
+        $db = db();
+
+        $stmt = $db->prepare("SELECT * FROM challenges WHERE id = ?");
         $stmt->execute([$challengeId]);
         $challenge = $stmt->fetch();
         if (!$challenge) {
             return ['success' => false, 'message' => 'Challenge not found', 'xp_earned' => 0];
         }
 
-        $stmt = $this->db->prepare("SELECT * FROM cases WHERE id = ?");
+        $stmt = $db->prepare("SELECT * FROM cases WHERE id = ?");
         $stmt->execute([$challenge['case_id']]);
         $case = $stmt->fetch();
         if (!$case) {
             return ['success' => false, 'message' => 'Case not found', 'xp_earned' => 0];
         }
 
-        $stmt = $this->db->prepare("SELECT * FROM case_databases WHERE case_id = ?");
+        $stmt = $db->prepare("SELECT * FROM case_databases WHERE case_id = ?");
         $stmt->execute([$case['id']]);
         $databases = $stmt->fetchAll();
         $databaseName = $databases[0]['database_name'] ?? null;
@@ -38,7 +29,7 @@ class ChallengeValidator
             return ['success' => false, 'message' => 'No investigation database configured', 'xp_earned' => 0];
         }
 
-        $investigationDb = Application::getInstance()->investigationDbFor($databaseName);
+        $investigationDb = investigationDbFor($databaseName);
 
         $startTime = microtime(true);
         try {
@@ -47,7 +38,7 @@ class ChallengeValidator
             $userRows = $stmt->fetchAll();
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
             $rowCount = count($userRows);
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
             $this->recordAttempt($userId, $challengeId, $query, 'error', $executionTime, 0, $e->getMessage());
             return ['success' => false, 'message' => 'Query execution failed: ' . $this->sanitizeError($e->getMessage()), 'xp_earned' => 0, 'type' => 'sql_error'];
@@ -145,20 +136,22 @@ class ChallengeValidator
 
     private function getHintsUsed(int $userId, int $challengeId): int
     {
-        $stmt = $this->db->prepare("SELECT id FROM hints WHERE challenge_id = ?");
+        $db = db();
+        $stmt = $db->prepare("SELECT id FROM hints WHERE challenge_id = ?");
         $stmt->execute([$challengeId]);
-        $hints = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+        $hints = $stmt->fetchAll(PDO::FETCH_COLUMN);
         if (empty($hints)) return 0;
 
         $placeholders = implode(',', array_fill(0, count($hints), '?'));
-        $stmt = $this->db->prepare("SELECT COUNT(*) FROM hint_usage WHERE user_id = ? AND hint_id IN ($placeholders)");
+        $stmt = $db->prepare("SELECT COUNT(*) FROM hint_usage WHERE user_id = ? AND hint_id IN ($placeholders)");
         $stmt->execute(array_merge([$userId], $hints));
         return (int)$stmt->fetchColumn();
     }
 
     private function recordAttempt(int $userId, int $challengeId, string $query, string $status, float $executionTime, int $rowCount, ?string $errorMessage): void
     {
-        $this->db->prepare("
+        $db = db();
+        $db->prepare("
             INSERT INTO challenge_attempts (user_id, challenge_id, submitted_query, result_status, execution_time_ms, rows_returned, error_message)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ")->execute([$userId, $challengeId, $query, $status, $executionTime, $rowCount, $errorMessage]);
@@ -166,14 +159,15 @@ class ChallengeValidator
 
     private function updateProgress(int $userId, int $challengeId): void
     {
-        $this->db->beginTransaction();
+        $db = db();
+        $db->beginTransaction();
         try {
-            $stmt = $this->db->prepare("SELECT * FROM challenges WHERE id = ?");
+            $stmt = $db->prepare("SELECT * FROM challenges WHERE id = ?");
             $stmt->execute([$challengeId]);
             $challenge = $stmt->fetch();
             $caseId = $challenge['case_id'];
 
-            $stmt = $this->db->prepare("
+            $stmt = $db->prepare("
                 SELECT * FROM challenges
                 WHERE case_id = ? AND display_order > ?
                 ORDER BY display_order ASC
@@ -182,15 +176,15 @@ class ChallengeValidator
             $stmt->execute([$caseId, $challenge['display_order']]);
             $nextChallenge = $stmt->fetch();
 
-            $stmt = $this->db->prepare("SELECT * FROM user_case_progress WHERE user_id = ? AND case_id = ?");
+            $stmt = $db->prepare("SELECT * FROM user_case_progress WHERE user_id = ? AND case_id = ?");
             $stmt->execute([$userId, $caseId]);
             $progress = $stmt->fetch();
 
-            $stmt = $this->db->prepare("SELECT COUNT(*) FROM challenges WHERE case_id = ?");
+            $stmt = $db->prepare("SELECT COUNT(*) FROM challenges WHERE case_id = ?");
             $stmt->execute([$caseId]);
             $totalChallenges = (int)$stmt->fetchColumn();
 
-            $stmt = $this->db->prepare("
+            $stmt = $db->prepare("
                 SELECT COUNT(DISTINCT challenge_id) FROM challenge_attempts
                 WHERE user_id = ? AND challenge_id IN (SELECT id FROM challenges WHERE case_id = ?) AND result_status = 'success'
             ");
@@ -212,7 +206,7 @@ class ChallengeValidator
                 }
                 $this->buildUpdate($progress['id'], $updateData);
             } else {
-                $this->db->prepare("
+                $db->prepare("
                     INSERT INTO user_case_progress (user_id, case_id, current_challenge_id, progress_percentage, completed, completed_at)
                     VALUES (?, ?, ?, ?, ?, ?)
                 ")->execute([
@@ -229,15 +223,16 @@ class ChallengeValidator
                 $this->completeCase($userId, $caseId, $challenge['xp_reward']);
             }
 
-            $this->db->commit();
-        } catch (\Throwable $e) {
-            $this->db->rollBack();
+            $db->commit();
+        } catch (Throwable $e) {
+            $db->rollBack();
             throw $e;
         }
     }
 
     private function buildUpdate(int $id, array $data): void
     {
+        $db = db();
         $sets = [];
         $params = [];
         foreach ($data as $col => $val) {
@@ -245,32 +240,34 @@ class ChallengeValidator
             $params[] = $val;
         }
         $params[] = $id;
-        $this->db->prepare("UPDATE user_case_progress SET " . implode(', ', $sets) . " WHERE id = ?")->execute($params);
+        $db->prepare("UPDATE user_case_progress SET " . implode(', ', $sets) . " WHERE id = ?")->execute($params);
     }
 
     private function completeCase(int $userId, int $caseId, int $challengeXpReward): void
     {
-        $stmt = $this->db->prepare("SELECT xp_reward FROM cases WHERE id = ?");
+        $db = db();
+        $stmt = $db->prepare("SELECT xp_reward FROM cases WHERE id = ?");
         $stmt->execute([$caseId]);
         $case = $stmt->fetch();
         $caseXp = $case['xp_reward'] ?? 0;
 
-        $stmt = $this->db->prepare("UPDATE user_case_progress SET xp_earned = ?, completed = 1, completed_at = NOW() WHERE user_id = ? AND case_id = ?");
+        $stmt = $db->prepare("UPDATE user_case_progress SET xp_earned = ?, completed = 1, completed_at = NOW() WHERE user_id = ? AND case_id = ?");
         $stmt->execute([$caseXp, $userId, $caseId]);
 
-        $this->db->prepare("UPDATE users SET xp = xp + ? WHERE id = ?")->execute([$caseXp, $userId]);
+        $db->prepare("UPDATE users SET xp = xp + ? WHERE id = ?")->execute([$caseXp, $userId]);
         $this->updateUserLevel($userId);
     }
 
     private function updateUserLevel(int $userId): void
     {
-        $stmt = $this->db->prepare("SELECT xp, level FROM users WHERE id = ?");
+        $db = db();
+        $stmt = $db->prepare("SELECT xp, level FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
         $newLevel = $this->calculateLevel($user['xp']);
         if ($newLevel > $user['level']) {
             $rank = $this->getRankForLevel($newLevel);
-            $this->db->prepare("UPDATE users SET level = ?, detective_rank = ? WHERE id = ?")->execute([$newLevel, $rank, $userId]);
+            $db->prepare("UPDATE users SET level = ?, detective_rank = ? WHERE id = ?")->execute([$newLevel, $rank, $userId]);
         }
     }
 
