@@ -85,7 +85,7 @@ INSERT INTO `network_logs` (`source_ip`, `destination_ip`, `source_port`, `desti
 ('10.0.2.101', '8.8.8.8', 49840, 53, 'dns', '2026-08-15 09:00:10', 128, 256, 1, 'allowed', 4, 1);
 
 -- Seed emails
-INSERT INTO `emails` (`message_id`, `sender_id`, `recipient_ids`, `subject`, `body`, `sent_at`, `folder`, `importance', `has_attachments`, `size_bytes`) VALUES
+INSERT INTO `emails` (`message_id`, `sender_id`, `recipient_ids`, `subject`, `body`, `sent_at`, `folder`, `importance`, `has_attachments`, `size_bytes`) VALUES
 ('MSG-2026-001', 1, '[2, 3, 4]', 'Q3 Budget Review Meeting', 'Hi team, please review the Q3 budget documents before our meeting on Friday.', '2026-08-15 14:00:00', 'sent', 'normal', TRUE, 2048000),
 ('MSG-2026-002', 3, '[1]', 'Re: Q3 Budget Review', 'I have reviewed the numbers and they look good. Attaching my analysis.', '2026-08-15 15:30:00', 'sent', 'normal', TRUE, 1048576),
 ('MSG-2026-003', 6, '[external:unknown@protonmail.com]', 'Project Files', 'As discussed, here are the files you requested.', '2026-08-12 03:05:00', 'sent', 'urgent', TRUE, 15728640),
