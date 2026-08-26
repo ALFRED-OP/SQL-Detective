@@ -4,7 +4,7 @@
         <p>Top detectives ranked by XP</p>
     </div>
 
-    <?php if ($this->user() && $userRank): ?>
+    <?php if (auth_check() && $userRank): ?>
     <div class="user-rank-banner">
         <span class="rank-label">Your Rank</span>
         <span class="rank-value">#<?= $userRank ?></span>
@@ -26,7 +26,7 @@
             </thead>
             <tbody>
                 <?php foreach ($leaders as $index => $leader): ?>
-                <tr class="<?= $this->user() && $leader['id'] == $this->user() ? 'current-user' : '' ?>">
+                <tr class="<?= auth_check() && $leader['id'] == auth_id() ? 'current-user' : '' ?>">
                     <td class="rank-cell">
                         <?php if ($index < 3): ?>
                         <span class="medal medal-<?= ['gold', 'silver', 'bronze'][$index] ?>">

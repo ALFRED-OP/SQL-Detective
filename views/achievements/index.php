@@ -4,7 +4,7 @@
         <p>Unlock achievements by completing investigations and reaching milestones</p>
     </div>
 
-    <?php if ($this->user()): ?>
+    <?php if (auth_check()): ?>
     <div class="achievement-progress">
         <div class="progress-summary">
             <span class="unlocked-count"><?= count(array_filter($achievements, fn($a) => in_array($a['id'], $userUnlocked))) ?> / <?= count($achievements) ?></span>

@@ -177,19 +177,52 @@ function guest(): bool {
 function route(string $name, array $params = []): string {
     $routes = [
         'home' => '/',
+        'how-it-works' => '/how-it-works',
         'login' => '/auth/login',
+        'login.post' => '/auth/login',
         'register' => '/auth/register',
+        'register.post' => '/auth/register',
         'logout' => '/auth/logout',
+        'password.request' => '/auth/password/reset',
+        'password.email' => '/auth/password/reset',
+        'password.update' => '/auth/password/reset',
+        'verification.verify' => '/auth/verify-email',
         'dashboard' => '/dashboard',
+        'dashboard.recent-queries' => '/dashboard/recent-queries',
         'cases' => '/cases',
+        'cases.show' => '/cases/{case}',
+        'cases.briefing' => '/cases/{case}/briefing',
+        'cases.evidence' => '/cases/{case}/evidence',
+        'cases.suspects' => '/cases/{case}/suspects',
+        'detective.workspace' => '/detective/{case}',
+        'profile' => '/profile',
+        'profile.achievements' => '/profile/achievements',
+        'profile.settings' => '/profile/settings',
+        'profile.update' => '/profile',
+        'profile.password' => '/profile/password',
         'leaderboard' => '/leaderboard',
         'achievements' => '/achievements',
-        'profile' => '/profile',
         'admin.dashboard' => '/admin',
+        'admin.users' => '/admin/users',
+        'admin.cases' => '/admin/cases',
+        'admin.cases.create' => '/admin/cases/create',
+        'admin.cases.store' => '/admin/cases',
+        'admin.cases.edit' => '/admin/cases/{case}/edit',
+        'admin.cases.update' => '/admin/cases/{case}',
+        'admin.challenges' => '/admin/challenges',
+        'admin.challenges.create' => '/admin/challenges/create',
+        'admin.challenges.store' => '/admin/challenges',
+        'admin.evidence' => '/admin/evidence',
+        'admin.suspects' => '/admin/suspects',
+        'admin.hints' => '/admin/hints',
+        'admin.achievements' => '/admin/achievements',
+        'admin.submissions' => '/admin/submissions',
+        'admin.logs' => '/admin/logs',
+        'admin.stats' => '/admin/stats',
     ];
     $path = $routes[$name] ?? '/';
     foreach ($params as $key => $value) {
-        $path = str_replace("{{$key}}", $value, $path);
+        $path = str_replace('{' . $key . '}', $value, $path);
     }
     return $path;
 }
@@ -265,8 +298,15 @@ function json_response(array $data, int $status = 200): void {
 }
 
 function validate(array $data, array $rules, array $messages = []): array {
-    $validator = new Validator($data, $rules, $messages);
-    return $validator->validate();
+    try {
+        $validator = new Validator($data, $rules, $messages);
+        return $validator->validate();
+    } catch (ValidationException $e) {
+        if (is_ajax()) {
+            json_response(['success' => false, 'message' => 'Validation failed', 'errors' => $e->errors], 422);
+        }
+        abort(422, 'Validation failed: ' . implode(', ', array_map(fn($errs) => implode(' ', $errs), $e->errors)));
+    }
 }
 
 function rate_limit(string $key, int $max, int $decayMinutes): bool {

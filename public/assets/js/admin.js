@@ -4,6 +4,8 @@
  */
 document.addEventListener('DOMContentLoaded', function() {
     initAdminConfirmations();
+    initUserToggle();
+    initDeleteCase();
     initBulkActions();
     initInlineEditing();
     initAdminSearch();
@@ -40,6 +42,77 @@ function initAdminConfirmations() {
                 document.body.appendChild(form);
                 form.submit();
             }
+        });
+    });
+}
+
+/* ── User Toggle (Activate/Deactivate) ──────────────────── */
+function initUserToggle() {
+    document.querySelectorAll('.toggle-user').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const userId = this.dataset.userId;
+            if (!userId) return;
+            if (!confirm('Are you sure you want to toggle this user\'s status?')) return;
+
+            const self = this;
+            self.disabled = true;
+
+            fetch('/admin/users/' + userId + '/toggle', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-Token': getCsrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.error || data.message || 'Toggle failed.');
+                    self.disabled = false;
+                }
+            })
+            .catch(function() {
+                alert('Network error.');
+                self.disabled = false;
+            });
+        });
+    });
+}
+
+/* ── Delete Case ────────────────────────────────────────── */
+function initDeleteCase() {
+    document.querySelectorAll('.delete-case').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const caseId = this.dataset.caseId;
+            const caseCode = this.dataset.caseCode || 'this case';
+            if (!caseId) return;
+            if (!confirm('Are you sure you want to delete ' + caseCode + '? This cannot be undone.')) return;
+
+            const self = this;
+            self.disabled = true;
+
+            fetch('/admin/cases/' + caseId, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-Token': getCsrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.error || data.message || 'Delete failed.');
+                    self.disabled = false;
+                }
+            })
+            .catch(function() {
+                alert('Network error.');
+                self.disabled = false;
+            });
         });
     });
 }

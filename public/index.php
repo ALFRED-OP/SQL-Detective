@@ -8,6 +8,9 @@ $uri = rtrim($uri, '/') ?: '/';
 // Support _method override for PATCH/DELETE via HTML forms
 if ($method === 'POST' && isset($_POST['_method'])) {
     $method = strtoupper($_POST['_method']);
+    if (!in_array($method, ['GET', 'POST', 'PATCH', 'DELETE'], true)) {
+        $method = 'POST';
+    }
 }
 
 // --- HEALTH ---
@@ -246,7 +249,7 @@ if ($uri === '/admin/users' && $method === 'GET') {
     admin_users();
     exit;
 }
-if (preg_match('#^/admin/users/(\d+)/toggle$#', $uri, $m) && $method === 'PATCH') {
+if (preg_match('#^/admin/users/(\d+)/toggle$#', $uri, $m) && $method === 'POST') {
     require PROJECT_ROOT . '/controllers/admin.php';
     admin_toggle_user((int)$m[1]);
     exit;

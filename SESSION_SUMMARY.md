@@ -109,6 +109,14 @@ Build a complete "SQL Detective" web application — an interactive database inv
 - Validator validateExists() variable shadowing — fixed
 - Session save path mismatch — fixed
 - .gitignore blocking investigation DB .sql files — fixed
+- route() helper missing ~20+ route names (login.post, profile.settings, cases.show, admin.*, etc.) — fixed
+- Old MVC `\App\Core\Application::getInstance()->db()` reference in workspace.php view — replaced with db()
+- Old MVC `$this->user()` references in achievements/index, leaderboard/index, admin/users views — replaced with auth_check()/auth_id()
+- validate() helper throwing uncaught ValidationException (500 error) — fixed with try/catch returning JSON 422
+- init.php calling session_save_path() on non-existent directory — fixed by creating dirs first
+- _method override accepting arbitrary HTTP methods — fixed with whitelist (GET/POST/PATCH/DELETE only)
+- Rate limit cache filenames not sanitized for filesystem (IPv6/colons) — fixed with preg_replace
+- Profile settings forms using method="POST" but routes expecting PATCH — fixed with _method hidden fields
 
 ## What's Done (Final Status)
 
@@ -132,6 +140,8 @@ All core features are complete with all bugs fixed:
 
 ### Known Remaining Issues
 1. Final PHP syntax verification (not possible without PHP on this Windows dev environment)
+2. Some view forms may need JavaScript AJAX interceptors to send _token via X-CSRF-TOKEN header (currently handled via form POST)
+3. `.htaccess` blocks `.json` files which could conflict with cache files if served from public — cache files are in `storage/` so this is fine
 
 ## Key File Paths
 - Project root: `D:\personal\A LVL PMM Project\SQL-Detective\SQL-Detective\`

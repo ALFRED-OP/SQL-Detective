@@ -33,7 +33,17 @@ if ($sessionConfig['domain']) {
     ini_set('session.cookie_domain', $sessionConfig['domain']);
 }
 session_name($sessionConfig['cookie']);
-session_save_path($sessionConfig['files']);
+$sessionPath = $sessionConfig['files'];
+if (!is_dir($sessionPath)) {
+    mkdir($sessionPath, 0755, true);
+}
+session_save_path($sessionPath);
+if (!is_dir(storage_path('logs'))) {
+    mkdir(storage_path('logs'), 0755, true);
+}
+if (!is_dir(storage_path('cache'))) {
+    mkdir(storage_path('cache'), 0755, true);
+}
 session_start();
 
 $headers = config('security.headers', []);

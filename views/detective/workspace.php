@@ -101,9 +101,11 @@
 
                 <div role="tabpanel" class="sidebar-panel" id="panel-evidence">
                     <div class="evidence-sidebar">
-                        <?php 
-                        $db = \App\Core\Application::getInstance()->db();
-                        $evidence = $db->prepare("SELECT * FROM evidence WHERE case_id = ? ORDER BY importance DESC, id")->execute([$case['id']])->fetchAll();
+                        <?php
+                        $evidenceDb = db();
+                        $evidenceStmt = $evidenceDb->prepare("SELECT * FROM evidence WHERE case_id = ? ORDER BY importance DESC, id");
+                        $evidenceStmt->execute([$case['id']]);
+                        $evidence = $evidenceStmt->fetchAll();
                         ?>
                         <?php foreach ($evidence as $item): ?>
                         <div class="evidence-item" data-evidence-id="<?= $item['id'] ?>">

@@ -41,7 +41,7 @@
                     <td><?= $user['last_login_at'] ? date('M j, Y H:i', strtotime($user['last_login_at'])) : 'Never' ?></td>
                     <td><?= date('M j, Y', strtotime($user['created_at'])) ?></td>
                     <td>
-                        <?php if ($user['id'] != $this->user()): ?>
+                        <?php if ($user['id'] != auth_id()): ?>
                         <button class="btn btn-ghost btn-sm toggle-user" data-user-id="<?= $user['id'] ?>" data-status="<?= $user['status'] ?>">
                             <?= $user['status'] === 'active' ? 'Deactivate' : 'Activate' ?>
                         </button>

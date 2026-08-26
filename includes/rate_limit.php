@@ -7,6 +7,7 @@ function rate_limit_check(string $key): void {
 
     $ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['HTTP_X_REAL_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     $ip = explode(',', $ip)[0];
+    $ip = preg_replace('/[^a-zA-Z0-9._-]/', '_', trim($ip));
     $userId = $_SESSION['user']['id'] ?? 'anonymous';
     $cacheKey = "ratelimit:$key:$ip:$userId";
     $cacheFile = storage_path("cache/$cacheKey.json");

@@ -19,6 +19,7 @@
             <h2>Profile Settings</h2>
             <form id="profile-form" class="settings-form" action="<?= route('profile.update') ?>" method="POST">
                 <?= csrf_field() ?>
+                <input type="hidden" name="_method" value="PATCH">
                 <div class="form-group">
                     <label for="display_name">Display Name</label>
                     <input type="text" id="display_name" name="display_name" required value="<?= e(auth_user()['display_name']) ?>">
@@ -35,6 +36,7 @@
             <h2>Change Password</h2>
             <form id="password-form" class="settings-form" action="<?= route('profile.password') ?>" method="POST">
                 <?= csrf_field() ?>
+                <input type="hidden" name="_method" value="PATCH">
                 <div class="form-group">
                     <label for="current_password">Current Password</label>
                     <input type="password" id="current_password" name="current_password" required autocomplete="current-password">
