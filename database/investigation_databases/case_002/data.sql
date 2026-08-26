@@ -88,7 +88,7 @@ INSERT INTO `network_logs` (`source_ip`, `destination_ip`, `source_port`, `desti
 INSERT INTO `emails` (`message_id`, `sender_id`, `recipient_ids`, `subject`, `body`, `sent_at`, `folder`, `importance`, `has_attachments`, `size_bytes`) VALUES
 ('MSG-2026-001', 1, '[2, 3, 4]', 'Q3 Budget Review Meeting', 'Hi team, please review the Q3 budget documents before our meeting on Friday.', '2026-08-15 14:00:00', 'sent', 'normal', TRUE, 2048000),
 ('MSG-2026-002', 3, '[1]', 'Re: Q3 Budget Review', 'I have reviewed the numbers and they look good. Attaching my analysis.', '2026-08-15 15:30:00', 'sent', 'normal', TRUE, 1048576),
-('MSG-2026-003', 6, '[external:unknown@protonmail.com]', 'Project Files', 'As discussed, here are the files you requested.', '2026-08-12 03:05:00', 'sent', 'urgent', TRUE, 15728640),
+('MSG-2026-003', 6, '["external:unknown@protonmail.com"]', 'Project Files', 'As discussed, here are the files you requested.', '2026-08-12 03:05:00', 'sent', 'urgent', TRUE, 15728640),
 ('MSG-2026-004', 2, '[5, 6, 7]', 'Security Policy Update', 'Please review the updated security policy document.', '2026-08-14 11:00:00', 'sent', 'high', FALSE, 4096),
 ('MSG-2026-005', 5, '[3]', 'Employee Survey Results', 'Hi Amit, here are the survey results for your department.', '2026-08-13 16:00:00', 'sent', 'normal', FALSE, 8192),
 ('MSG-2026-006', 4, '[8]', 'Code Review Request', 'Can you review my pull request when you get a chance?', '2026-08-15 10:00:00', 'sent', 'normal', FALSE, 2048),

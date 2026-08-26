@@ -132,7 +132,7 @@ INSERT INTO `access_logs` (`employee_id`, `resource`, `resource_type`, `action`,
 (2, '/engineering/budget', 'admin', 'view', '2026-08-05 10:00:00', '192.168.1.11', 'sess_vp_001', TRUE, 200),
 (2, '/engineering/budget', 'admin', 'update', '2026-08-05 10:10:00', '192.168.1.11', 'sess_vp_001', TRUE, 200),
 (2, '/engineering/hiring', 'admin', 'create', '2026-08-10 11:00:00', '192.168.1.11', 'sess_vp_002', TRUE, 201),
-(2, '/engineering/hiring', 'admin', 'approve', '2026-08-10 11:05:00', '192.168.1.11', 'sess_vp_002', TRUE, 200),
+(2, '/engineering/hiring', 'admin', 'update', '2026-08-10 11:05:00', '192.168.1.11', 'sess_vp_002', TRUE, 200),
 (2, '/finance/budget', 'database', 'view', '2026-08-15 14:00:00', '192.168.1.11', 'sess_vp_003', TRUE, 200),
 (2, '/finance/budget', 'database', 'update', '2026-08-15 14:10:00', '192.168.1.11', 'sess_vp_003', TRUE, 200);
 

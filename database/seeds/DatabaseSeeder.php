@@ -581,9 +581,14 @@ class DatabaseSeeder
         ];
 
         foreach ($dbMap as $dbName => $dir) {
-            $pdo->exec("DROP DATABASE IF EXISTS `" . $dbName . "`");
-            $pdo->exec("CREATE DATABASE IF NOT EXISTS `" . $dbName . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-            $pdo->exec("USE `" . $dbName . "`");
+            try {
+                $pdo->exec("DROP DATABASE IF EXISTS `" . $dbName . "`");
+                $pdo->exec("CREATE DATABASE IF NOT EXISTS `" . $dbName . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+                $pdo->exec("USE `" . $dbName . "`");
+            } catch (\Throwable $e) {
+                echo "ERROR preparing database {$dbName}: " . $e->getMessage() . "\n";
+                continue;
+            }
 
             $sqlFiles = ['schema.sql', 'data.sql', 'supplemental_data.sql'];
             foreach ($sqlFiles as $file) {
@@ -593,20 +598,41 @@ class DatabaseSeeder
                 echo "Loading {$file} into {$dbName}...\n";
                 $sql = file_get_contents($path);
                 $statements = $this->splitSqlStatements($sql);
+                $stmtCount = 0;
                 foreach ($statements as $statement) {
                     $statement = trim($statement);
                     if (!empty($statement) && !str_starts_with($statement, '--')) {
+                        $stmtCount++;
                         try {
                             $pdo->exec($statement);
-                        } catch (PDOException $e) {
-                            echo "  Warning: " . $e->getMessage() . "\n";
+                        } catch (\Throwable $e) {
+                            echo "  WARNING (stmt #{$stmtCount}): " . $e->getMessage() . "\n";
+                            echo "  SQL: " . substr($statement, 0, 200) . "\n";
                         }
                     }
                 }
+                echo "  Executed {$stmtCount} statements from {$file}\n";
             }
         }
 
         echo "Investigation databases loaded successfully\n";
+
+        $invConfig = $config['connections']['investigation'];
+        $invUser = $invConfig['username'];
+        $invPass = $invConfig['password'];
+        if ($invUser && $invPass) {
+            echo "Setting up read-only user: {$invUser}\n";
+            try {
+                $pdo->exec("CREATE USER IF NOT EXISTS '" . $invUser . "'@'%' IDENTIFIED BY '" . addslashes($invPass) . "'");
+                foreach (array_keys($dbMap) as $dbName) {
+                    $pdo->exec("GRANT SELECT ON `" . $dbName . "`.* TO '" . $invUser . "'@'%'");
+                }
+                $pdo->exec("FLUSH PRIVILEGES");
+                echo "Read-only user {$invUser} configured with SELECT on investigation databases\n";
+            } catch (\Throwable $e) {
+                echo "WARNING: Could not create read-only user: " . $e->getMessage() . "\n";
+            }
+        }
     }
 
     private function splitSqlStatements(string $sql): array

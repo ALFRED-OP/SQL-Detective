@@ -36,15 +36,15 @@ INSERT INTO `activities` (`user_id`, `device_id`, `action_type`, `description`, 
 -- ============================================================
 INSERT INTO `emails` (`message_id`, `sender_id`, `recipient_ids`, `subject`, `body`, `sent_at`, `folder`, `importance`, `has_attachments`, `size_bytes`) VALUES
 -- External phishing emails (sender_id = NULL means external/inbound)
-(NULL, NULL, '[1, 2, 3]', 'URGENT: Verify Your Password Immediately', 'Dear Employee, Your password will expire in 24 hours. Click the link below to reset your password: http://corp-verify.security-reset.xyz/verify', '2026-08-10 08:30:00', 'inbox', 'urgent', TRUE, 1024),
-(NULL, NULL, '[4, 5, 6, 7]', 'IT Security Alert - Account Compromised', 'We have detected unauthorized access to your account. Please verify your identity by providing your credentials at: http://10.0.2.103/security/login', '2026-08-10 09:15:00', 'inbox', 'urgent', FALSE, 2048),
-(NULL, NULL, '[8, 3, 1]', 'Monthly Payroll Statement - Action Required', 'Your salary slip for August 2026 is ready. Download from: http://payroll-corp.insecure-site.com/slip.php?id=42', '2026-08-11 10:00:00', 'inbox', 'high', TRUE, 51200),
+('EXT-2026-001', NULL, '[1, 2, 3]', 'URGENT: Verify Your Password Immediately', 'Dear Employee, Your password will expire in 24 hours. Click the link below to reset your password: http://corp-verify.security-reset.xyz/verify', '2026-08-10 08:30:00', 'inbox', 'urgent', TRUE, 1024),
+('EXT-2026-002', NULL, '[4, 5, 6, 7]', 'IT Security Alert - Account Compromised', 'We have detected unauthorized access to your account. Please verify your identity by providing your credentials at: http://10.0.2.103/security/login', '2026-08-10 09:15:00', 'inbox', 'urgent', FALSE, 2048),
+('EXT-2026-003', NULL, '[8, 3, 1]', 'Monthly Payroll Statement - Action Required', 'Your salary slip for August 2026 is ready. Download from: http://payroll-corp.insecure-site.com/slip.php?id=42', '2026-08-11 10:00:00', 'inbox', 'high', TRUE, 51200),
 -- Phishing emails sent by compromised account
 (6, 6, '[3, 4, 5]', 'FW: Invoice Payment Urgently Needed', 'Please process the attached invoice for immediate payment. Account details: 9876543210, IFSC: UTIB0000001', '2026-08-12 10:30:00', 'sent', 'urgent', TRUE, 204800),
 (6, 6, '[1]', 'Re: Board Meeting Agenda - Confidential', 'Attached are the confidential board documents. Please review before Friday.', '2026-08-12 14:00:00', 'sent', 'urgent', TRUE, 5242880),
 -- More external phishing attempts
-(NULL, NULL, '[2, 6, 8]', 'Claim Your Festival Bonus Now!', 'Congratulations! You have been selected for a special festival bonus. Verify your bank details at: http://bonus-festival.linkedaccount.com/claim', '2026-08-13 11:00:00', 'inbox', 'normal', FALSE, 4096),
-(NULL, NULL, '[9, 10]', 'System Upgrade Required - Login Required', 'Our systems have been upgraded. All users must re-authenticate at: http://portal-corp-update.xyz/auth', '2026-08-14 09:00:00', 'inbox', 'high', FALSE, 1024),
+('EXT-2026-004', NULL, '[2, 6, 8]', 'Claim Your Festival Bonus Now!', 'Congratulations! You have been selected for a special festival bonus. Verify your bank details at: http://bonus-festival.linkedaccount.com/claim', '2026-08-13 11:00:00', 'inbox', 'normal', FALSE, 4096),
+('EXT-2026-005', NULL, '[9, 10]', 'System Upgrade Required - Login Required', 'Our systems have been upgraded. All users must re-authenticate at: http://portal-corp-update.xyz/auth', '2026-08-14 09:00:00', 'inbox', 'high', FALSE, 1024),
 -- Legitimate emails (noise)
 (1, 1, '[3, 4, 5]', 'Q3 Budget Review Meeting', 'Hi team, please review the Q3 budget documents before our meeting on Friday.', '2026-08-15 14:00:00', 'sent', 'normal', TRUE, 2048000),
 (2, 5, '[3]', 'Employee Survey Results', 'Hi Amit, here are the survey results for your department.', '2026-08-13 16:00:00', 'sent', 'normal', FALSE, 8192),
@@ -226,12 +226,12 @@ INSERT INTO `logs` (`log_type`, `level`, `source`, `message`, `user_id`, `device
 ('security', 'error', 'HIDS', 'Suspicious process spawned from web server', NULL, 11, '203.0.113.50', '2026-08-12 02:12:00', '{"parent": "nginx", "child": "bash", "pid": 45678}'),
 -- Network connections on same dates
 -- (supplemental_network_logs will be added separately)
-('security', 'high', 'Firewall', 'Reverse shell connection attempt', NULL, 11, '203.0.113.50', '2026-08-12 02:15:00', '{"dest_ip": "203.0.113.50", "port": 4444}'),
-('security', 'high', 'DLP', 'Sensitive file staging detected', NULL, 11, '203.0.113.50', '2026-08-12 02:20:00', '{"directory": "/tmp/.cache", "files": 5, "total_size": "80MB"}'),
+('security', 'warning', 'Firewall', 'Reverse shell connection attempt', NULL, 11, '203.0.113.50', '2026-08-12 02:15:00', '{"dest_ip": "203.0.113.50", "port": 4444}'),
+('security', 'error', 'DLP', 'Sensitive file staging detected', NULL, 11, '203.0.113.50', '2026-08-12 02:20:00', '{"directory": "/tmp/.cache", "files": 5, "total_size": "80MB"}'),
 -- Critical events on Aug 14
 ('security', 'critical', 'EDR', 'Rootkit signature detected', NULL, 11, '203.0.113.50', '2026-08-14 01:30:00', '{"type": "rootkit", "location": "/usr/lib/modules/"}'),
-('security', 'high', 'HIDS', 'System binary modification detected', NULL, 11, '203.0.113.50', '2026-08-14 01:35:00', '{"binary": "/usr/bin/ls", "hash_changed": true}'),
-('security', 'high', 'Audit', 'SSH key added to authorized_keys', 6, 11, '203.0.113.50', '2026-08-14 01:40:00', '{"user": "www-data", "key_type": "RSA"}'),
+('security', 'error', 'HIDS', 'System binary modification detected', NULL, 11, '203.0.113.50', '2026-08-14 01:35:00', '{"binary": "/usr/bin/ls", "hash_changed": true}'),
+('security', 'critical', 'Audit', 'SSH key added to authorized_keys', 6, 11, '203.0.113.50', '2026-08-14 01:40:00', '{"user": "www-data", "key_type": "RSA"}'),
 -- Normal events (noise)
 ('application', 'info', 'WebServer', 'Request processed successfully', NULL, 3, '10.0.2.101', '2026-08-12 10:00:00', '{"method": "GET", "path": "/api/health", "status": 200}'),
 ('system', 'info', 'Backup', 'Nightly backup completed', 9, 1, '10.0.1.10', '2026-08-14 03:00:00', '{"size_gb": 15}');

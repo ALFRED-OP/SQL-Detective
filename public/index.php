@@ -20,6 +20,39 @@ if ($uri === '/health') {
     exit;
 }
 
+// --- DIAGNOSTIC (remove after debugging) ---
+if ($uri === '/diag') {
+    header('Content-Type: text/plain');
+    echo "URI: {$uri}\n";
+    echo "REQUEST_URI: " . ($_SERVER['REQUEST_URI'] ?? 'N/A') . "\n";
+    echo "SCRIPT_NAME: " . ($_SERVER['SCRIPT_NAME'] ?? 'N/A') . "\n";
+    echo "PHP SAPI: " . php_sapi_name() . "\n";
+    echo "PHP VERSION: " . phpversion() . "\n";
+    echo "PROJECT_ROOT: " . PROJECT_ROOT . "\n";
+    echo "Session active: " . (session_status() === PHP_SESSION_ACTIVE ? 'yes' : 'no') . "\n";
+    echo "Storage writable: " . (is_writable(storage_path()) ? 'yes' : 'no') . "\n";
+    $envExists = file_exists(PROJECT_ROOT . '/.env');
+    echo ".env exists: " . ($envExists ? 'yes' : 'no') . "\n";
+    if ($envExists) {
+        $dbUser = env('DB_USER', '(not set)');
+        $dbRoot = env('DB_ROOT_USER', '(not set)');
+        echo "DB_USER: {$dbUser}\n";
+        echo "DB_ROOT_USER: {$dbRoot}\n";
+        echo "DB_NAME: " . env('DB_NAME', '(not set)') . "\n";
+    }
+    try {
+        $db = db();
+        echo "DB connection: OK\n";
+        $tables = [];
+        $rows = $db->query("SHOW TABLES")->fetchAll(PDO::FETCH_NUM);
+        foreach ($rows as $row) { $tables[] = $row[0]; }
+        echo "Tables: " . implode(', ', $tables) . "\n";
+    } catch (\Throwable $e) {
+        echo "DB connection FAILED: " . $e->getMessage() . "\n";
+    }
+    exit;
+}
+
 // --- HOME ---
 if ($uri === '/' && $method === 'GET') {
     require PROJECT_ROOT . '/controllers/home.php';
