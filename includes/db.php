@@ -5,7 +5,12 @@ function db_connect() {
     if ($pdo !== null) return $pdo;
     $config = config('database.connections.mysql');
     $dsn = "{$config['driver']}:host={$config['host']};port={$config['port']};dbname={$config['database']};charset={$config['charset']}";
-    $pdo = new PDO($dsn, $config['username'], $config['password'], $config['options'] ?? []);
+    $options = $config['options'] ?? [];
+    $sslCa = env('DB_SSL_CA');
+    if ($sslCa && file_exists($sslCa)) {
+        $options[PDO::MYSQL_ATTR_SSL_CA] = $sslCa;
+    }
+    $pdo = new PDO($dsn, $config['username'], $config['password'], $options);
     return $pdo;
 }
 
