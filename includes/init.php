@@ -1,5 +1,7 @@
 <?php
-define('PROJECT_ROOT', dirname(__DIR__));
+if (!defined('PROJECT_ROOT')) {
+    define('PROJECT_ROOT', dirname(__DIR__));
+}
 
 function env_load($file) {
     if (!file_exists($file)) return;
