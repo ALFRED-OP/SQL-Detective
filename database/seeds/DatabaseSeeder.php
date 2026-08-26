@@ -610,19 +610,20 @@ class DatabaseSeeder
 
     private function splitSqlStatements(string $sql): array
     {
-        $sql = preg_replace('/--.*$/m', '', $sql);
-        $sql = preg_replace('/\/\*[\s\S]*?\*\//', '', $sql);
         $statements = [];
         $current = '';
         $inString = false;
         $stringChar = '';
+        $len = strlen($sql);
 
-        for ($i = 0; $i < strlen($sql); $i++) {
+        for ($i = 0; $i < $len; $i++) {
             $char = $sql[$i];
 
             if ($inString) {
                 $current .= $char;
-                if ($char === $stringChar && ($i === 0 || $sql[$i - 1] !== '\\')) {
+                if ($char === '\\' && $i + 1 < $len) {
+                    $current .= $sql[++$i];
+                } elseif ($char === $stringChar) {
                     $inString = false;
                 }
             } else {
@@ -630,8 +631,21 @@ class DatabaseSeeder
                     $inString = true;
                     $stringChar = $char;
                     $current .= $char;
+                } elseif ($char === '-' && $i + 1 < $len && $sql[$i + 1] === '-') {
+                    while ($i < $len && $sql[$i] !== "\n") {
+                        $i++;
+                    }
+                } elseif ($char === '/' && $i + 1 < $len && $sql[$i + 1] === '*') {
+                    $i += 2;
+                    while ($i < $len - 1 && !($sql[$i] === '*' && $sql[$i + 1] === '/')) {
+                        $i++;
+                    }
+                    $i++;
                 } elseif ($char === ';') {
-                    $statements[] = $current;
+                    $trimmed = trim($current);
+                    if (!empty($trimmed)) {
+                        $statements[] = $current;
+                    }
                     $current = '';
                 } else {
                     $current .= $char;
@@ -639,7 +653,8 @@ class DatabaseSeeder
             }
         }
 
-        if (trim($current) !== '') {
+        $trimmed = trim($current);
+        if (!empty($trimmed)) {
             $statements[] = $current;
         }
 

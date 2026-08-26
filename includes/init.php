@@ -22,6 +22,7 @@ function env_load($file) {
 env_load(PROJECT_ROOT . '/.env');
 
 require_once PROJECT_ROOT . '/includes/helpers.php';
+require_once PROJECT_ROOT . '/includes/auth.php';
 
 if (php_sapi_name() !== 'cli') {
     $sessionConfig = config('security.session');

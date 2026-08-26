@@ -36,7 +36,7 @@ INSERT INTO `activities` (`user_id`, `device_id`, `action_type`, `description`, 
 (3, 6, 'login', 'User login', '2026-08-15 09:10:00', '10.0.2.103', TRUE, '{"browser": "Chrome 118", "os": "Windows 11"}'),
 (4, 7, 'login', 'VPN login from remote', '2026-08-15 08:30:00', '103.21.58.1', TRUE, '{"vpn": "Corporate VPN", "location": "Bangalore"}'),
 (3, 6, 'file_access', 'Accessed financial_report_q2.xlsx', '2026-08-15 09:30:00', '10.0.2.103', TRUE, '{"path": "/shared/finance/Q2_report.xlsx", "action": "read"}'),
-(3, 6, 'database_query', 'SELECT query on employees table', '2026-08-15 10:00:00', '10.0.2.103', TRUE, '{"query": "SELECT * FROM employees WHERE department = '\''Finance'\''", "rows": 12}'),
+(3, 6, 'database_query', 'SELECT query on employees table', '2026-08-15 10:00:00', '10.0.2.103', TRUE, '{"query": "SELECT * FROM employees WHERE department = \\"Finance\\"", "rows": 12}'),
 (1, 4, 'email_send', 'Email to board@corp.com', '2026-08-15 14:00:00', '10.0.2.101', TRUE, '{"subject": "Q3 Budget Review", "recipients": 5}'),
 -- Suspicious activities - after hours from compromised device
 (6, 11, 'login', 'Login from unknown device', '2026-08-12 02:15:00', '203.0.113.50', TRUE, '{"browser": "Chrome 118", "os": "Windows 10", "vpn": false}'),

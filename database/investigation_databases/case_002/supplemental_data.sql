@@ -142,16 +142,16 @@ INSERT INTO `activities` (`user_id`, `device_id`, `action_type`, `description`, 
 -- ============================================================
 INSERT INTO `activities` (`user_id`, `device_id`, `action_type`, `description`, `timestamp`, `ip_address`, `success`, `details`) VALUES
 -- Employee 6 (Manoj Gupta - locked account) running automated queries
-(6, 11, 'database_query', 'Automated query batch 1', '2026-08-12 02:30:00', '203.0.113.50', TRUE, '{"query": "SELECT * FROM users WHERE role = '\''admin'\''", "rows": 2}'),
-(6, 11, 'database_query', 'Automated query batch 2', '2026-08-12 02:30:03', '203.0.113.50', TRUE, '{"query": "SELECT * FROM users WHERE status = '\''active'\''", "rows": 8}'),
+(6, 11, 'database_query', 'Automated query batch 1', '2026-08-12 02:30:00', '203.0.113.50', TRUE, '{"query": "SELECT * FROM users WHERE role = \\"admin\\"", "rows": 2}'),
+(6, 11, 'database_query', 'Automated query batch 2', '2026-08-12 02:30:03', '203.0.113.50', TRUE, '{"query": "SELECT * FROM users WHERE status = \\"active\\"", "rows": 8}'),
 (6, 11, 'database_query', 'Automated query batch 3', '2026-08-12 02:30:06', '203.0.113.50', TRUE, '{"query": "SELECT * FROM employees", "rows": 500}'),
 (6, 11, 'database_query', 'Automated query batch 4', '2026-08-12 02:30:09', '203.0.113.50', TRUE, '{"query": "SELECT * FROM salary_data", "rows": 500}'),
-(6, 11, 'database_query', 'Automated query batch 5', '2026-08-12 02:30:12', '203.0.113.50', TRUE, '{"query": "SELECT * FROM access_logs WHERE action = '\''admin'\''", "rows": 25}'),
+(6, 11, 'database_query', 'Automated query batch 5', '2026-08-12 02:30:12', '203.0.113.50', TRUE, '{"query": "SELECT * FROM access_logs WHERE action = \\"admin\\"", "rows": 25}'),
 (6, 11, 'database_query', 'Automated query batch 6', '2026-08-12 02:30:15', '203.0.113.50', TRUE, '{"query": "SELECT * FROM transactions WHERE amount > 100000", "rows": 45}'),
 (6, 11, 'database_query', 'Automated query batch 7', '2026-08-12 02:30:18', '203.0.113.50', TRUE, '{"query": "SELECT * FROM bank_accounts", "rows": 14}'),
-(6, 11, 'database_query', 'Automated query batch 8', '2026-08-12 02:30:21', '203.0.113.50', TRUE, '{"query": "SELECT * FROM login_logs WHERE status = '\''failed'\''", "rows": 120}'),
+(6, 11, 'database_query', 'Automated query batch 8', '2026-08-12 02:30:21', '203.0.113.50', TRUE, '{"query": "SELECT * FROM login_logs WHERE status = \\"failed\\"", "rows": 120}'),
 (6, 11, 'database_query', 'Automated query batch 9', '2026-08-12 02:30:24', '203.0.113.50', TRUE, '{"query": "SELECT * FROM permission_changes", "rows": 5}'),
-(6, 11, 'database_query', 'Automated query batch 10', '2026-08-12 02:30:27', '203.0.113.50', TRUE, '{"query": "SELECT * FROM system_events WHERE severity = '\''critical'\''", "rows": 3}'),
+(6, 11, 'database_query', 'Automated query batch 10', '2026-08-12 02:30:27', '203.0.113.50', TRUE, '{"query": "SELECT * FROM system_events WHERE severity = \\"critical\\"", "rows": 3}'),
 (6, 11, 'database_query', 'Automated query batch 11', '2026-08-12 02:30:30', '203.0.113.50', TRUE, '{"query": "SELECT * FROM email_templates", "rows": 15}'),
 (6, 11, 'database_query', 'Automated query batch 12', '2026-08-12 02:30:33', '203.0.113.50', TRUE, '{"query": "SELECT * FROM config_settings", "rows": 42}'),
 (6, 11, 'database_query', 'Automated query batch 13', '2026-08-12 02:30:36', '203.0.113.50', TRUE, '{"query": "SHOW TABLES", "rows": 25}'),
@@ -159,7 +159,7 @@ INSERT INTO `activities` (`user_id`, `device_id`, `action_type`, `description`, 
 (6, 11, 'database_query', 'Automated query batch 15', '2026-08-12 02:30:42', '203.0.113.50', TRUE, '{"query": "SELECT @@version", "rows": 1}'),
 -- Normal query activity (contrast)
 (3, 6, 'database_query', 'Monthly financial query', '2026-08-15 10:00:00', '10.0.2.103', TRUE, '{"query": "SELECT SUM(amount) FROM transactions", "rows": 1}'),
-(1, 4, 'database_query', 'Admin dashboard query', '2026-08-15 14:00:00', '10.0.2.101', TRUE, '{"query": "SELECT COUNT(*) FROM users WHERE status = '\''active'\''", "rows": 1}'),
+(1, 4, 'database_query', 'Admin dashboard query', '2026-08-15 14:00:00', '10.0.2.101', TRUE, '{"query": "SELECT COUNT(*) FROM users WHERE status = \\"active\\"", "rows": 1}'),
 (8, 7, 'database_query', 'Engineering metrics query', '2026-08-15 11:00:00', '10.0.3.50', TRUE, '{"query": "SELECT COUNT(*) FROM deployments", "rows": 1}');
 
 -- ============================================================
@@ -199,7 +199,7 @@ INSERT INTO `activities` (`user_id`, `device_id`, `action_type`, `description`, 
 (6, 11, 'file_access', 'Accessed password policy document', '2026-03-20 02:35:00', '203.0.113.50', TRUE, '{"path": "/shared/IT/password_policy.pdf", "action": "read"}'),
 -- April 2026 - Lateral movement
 (NULL, 11, 'privilege_escalation', 'Attempted privilege escalation', '2026-04-10 01:45:00', '203.0.113.50', FALSE, '{"method": "exploit_cve_2026_1234", "target": "system_admin"}'),
-(6, 11, 'database_query', 'Modified own user role', '2026-04-10 01:50:00', '203.0.113.50', TRUE, '{"query": "UPDATE users SET role = '\''admin'\'' WHERE id = 6", "affected_rows": 1}'),
+(6, 11, 'database_query', 'Modified own user role', '2026-04-10 01:50:00', '203.0.113.50', TRUE, '{"query": "UPDATE users SET role = \\"admin\\" WHERE id = 6", "affected_rows": 1}'),
 -- May 2026 - Data staging
 (6, 11, 'file_access', 'Created staging directory', '2026-05-15 02:00:00', '203.0.113.50', TRUE, '{"path": "/tmp/.cache_backup/", "action": "create_dir"}'),
 (6, 11, 'database_query', 'Exported user credentials', '2026-05-15 02:10:00', '203.0.113.50', TRUE, '{"query": "SELECT * INTO OUTFILE", "rows": 500, "exported": true}'),
